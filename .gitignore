@@ -1,0 +1,19 @@
+# data
+data/raw/*
+data/interim/*
+data/processed/*
+
+# physionet files
+*.dat
+*.hea
+metadata.csv
+
+# python
+__init__.py
+__pycache__/
+*.pyc
+
+# environment
+venv/
+.env
+.venv/
