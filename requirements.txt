@@ -1,10 +1,6 @@
-wfdb
-numpy
-pandas
-scipy
-matplotlib
-scikit-learn
-xgboost
-torch
-neurokit2
-shap
+matplotlib==3.10.8
+numpy==2.4.3
+pandas==3.0.1
+PyWavelets==1.9.0
+scipy==1.17.1
+wfdb==4.3.1
