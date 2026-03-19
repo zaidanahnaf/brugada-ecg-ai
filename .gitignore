@@ -1,3 +1,6 @@
+# other
+.vscode/
+
 # data
 data/raw/*
 data/interim/*

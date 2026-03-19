@@ -1,4 +1,8 @@
-DATA_PATH = "data/raw"
-DATASET_FOLDER = "brugada-huca-12-lead-ecg-recordings-for-the-study-of-brugada-syndrome-1.0.0"
+import os
 
-FULL_DATA_PATH = f"{DATA_PATH}/{DATASET_FOLDER}"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+DATA_PATH = os.path.join(BASE_DIR, "src", "data", "raw")
+FULL_DATA_PATH = DATA_PATH
+
+print(os.listdir())
