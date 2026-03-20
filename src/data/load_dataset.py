@@ -1,37 +1,24 @@
-import os
+from pathlib import Path
 import wfdb
 import pandas as pd
-from src.config import FULL_DATA_PATH  
-
-DATA_PATH = FULL_DATA_PATH
+from src.config import DATA_PATH
 
 
 def load_metadata():
-    metadata_path = os.path.join(DATA_PATH, "metadata.csv")
-    metadata = pd.read_csv(metadata_path)
-    return metadata
+    return pd.read_csv(DATA_PATH / "metadata.csv")
 
 
 def load_ecg(patient_id):
-    record_path = os.path.join(
-        DATA_PATH,
-        "files",           
-        str(patient_id),
-        str(patient_id)
-    )
+    record_path = DATA_PATH / "files" / str(patient_id) / str(patient_id)
 
     print(f"[DEBUG] Loading: {record_path}")
 
-    if not os.path.exists(record_path + ".hea"):
+    if not (record_path.with_suffix(".hea")).exists():
         raise FileNotFoundError(f"File not found: {record_path}.hea")
 
-    record = wfdb.rdrecord(record_path)
+    record = wfdb.rdrecord(str(record_path))
 
-    signals = record.p_signal
-    fs = record.fs
-    lead_names = record.sig_name
-
-    return signals, fs, lead_names
+    return record.p_signal, record.fs, record.sig_name
 
 
 def debug_sample(n=5):
@@ -45,13 +32,12 @@ def debug_sample(n=5):
         sample_id = metadata.iloc[i]["patient_id"]
 
         print(f"\n[INFO] Loading patient: {sample_id}")
-    signals, fs, leads = load_ecg(sample_id)
 
-    print("Sample ID:", sample_id)
-    print("Signal shape:", signals.shape)
-    print("Sampling rate:", fs)
-    print("Leads:", leads)
+        signals, fs, leads = load_ecg(sample_id)
 
+        print("Signal shape:", signals.shape)
+        print("Sampling rate:", fs)
+        print("Leads:", leads)
 
 if __name__ == "__main__":
     debug_sample(5)

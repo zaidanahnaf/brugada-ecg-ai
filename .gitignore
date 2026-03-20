@@ -5,6 +5,9 @@
 data/raw/*
 data/interim/*
 data/processed/*
+data/groups.npy
+data/X.npy
+data/y.npy
 
 # physionet files
 *.dat

@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 set -e
@@ -18,11 +19,25 @@ echo " Downloading Brugada-HUCA v${DATASET_VERSION} Dataset "
 echo "==========================================================="
 
 # absolute path
-mkdir -p "${PROJECT_ROOT}/src/data/raw"
-cd "${PROJECT_ROOT}/src/data/raw"
+mkdir -p "${PROJECT_ROOT}/data/raw"
+cd "${PROJECT_ROOT}/data/raw"
 
 echo "[INFO] Downloading dataset..."
-wget -r -N -c -np -nH --cut-dirs=3 ${BASE_URL}/
+# metadata
+wget -N -c ${BASE_URL}/metadata.csv
+wget -N -c ${BASE_URL}/metadata_dictionary.csv
+
+# files.zip
+wget -N -c ${BASE_URL}/files.zip
+
+# extract
+echo "[INFO] Extracting files.zip..."
+unzip -o files.zip
+rm files.zip # Delete zip file 
+
+# delete macOS folder
+rm -rf __MACOSX
+find . -name "._*" -type f -delete # delete macOS hidden files
 
 if [ ! -f "metadata.csv" ]; then
   echo "[ERROR] metadata.csv not found. Download may have failed."
