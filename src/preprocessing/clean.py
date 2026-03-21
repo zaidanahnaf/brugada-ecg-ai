@@ -1,5 +1,5 @@
 import numpy as np
-from src.preprocessing.dwt_denoise import dwt_denoise
+from src.preprocessing.cleaning_method.dwt_denoise import dwt_denoise
 
 def clean_ecg(raw_signals):
     cleaned = np.zeros_like(raw_signals)

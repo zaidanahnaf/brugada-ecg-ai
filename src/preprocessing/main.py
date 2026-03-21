@@ -4,13 +4,13 @@ import numpy as np
 
 from src.preprocessing.pipeline import preprocess_pipeline
 from src.data.load_dataset import load_ecg
-from src.config import DATA_PATH, PROCESSED_PATH
+from src.config import RAW_PATH, PROCESSED_PATH
 
 # main function to run the preprocessing pipeline
 if __name__ == "__main__":
     os.makedirs(PROCESSED_PATH, exist_ok=True)
 
-    metadata = pd.read_csv(os.path.join(DATA_PATH, "metadata.csv"))
+    metadata = pd.read_csv(os.path.join(RAW_PATH, "metadata.csv"))
 
     # Iterate through each patient in the metadata
     for idx, row in metadata.iterrows():

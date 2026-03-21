@@ -1,15 +1,15 @@
 from pathlib import Path
 import wfdb
 import pandas as pd
-from src.config import DATA_PATH
+from src.config import RAW_PATH
 
 
 def load_metadata():
-    return pd.read_csv(DATA_PATH / "metadata.csv")
+    return pd.read_csv(RAW_PATH / "metadata.csv") # Change to Path object for better path handling
 
 
 def load_ecg(patient_id):
-    record_path = DATA_PATH / "files" / str(patient_id) / str(patient_id)
+    record_path = RAW_PATH / "files" / str(patient_id) / str(patient_id) # change to Path object for better path handling
 
     print(f"[DEBUG] Loading: {record_path}")
 
