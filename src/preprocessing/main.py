@@ -11,6 +11,7 @@ if __name__ == "__main__":
     os.makedirs(PROCESSED_PATH, exist_ok=True)
 
     metadata = pd.read_csv(os.path.join(RAW_PATH, "metadata.csv"))
+    metadata['brugada'] = metadata['brugada'].apply(lambda x: 1 if x > 0 else 0)
 
     # Iterate through each patient in the metadata
     for idx, row in metadata.iterrows():
