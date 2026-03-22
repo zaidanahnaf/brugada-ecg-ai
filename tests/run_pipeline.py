@@ -3,7 +3,7 @@
 import logging
 import pandas as pd
 from src.config import CFG
-from src.data_loader import load_metadata
+from src.data.data_loader import load_metadata
 from src.fold_manager import create_folds
 from src.pipeline import run_full_pipeline
 
