@@ -1,4 +1,4 @@
-# Brugada CNN — Person 2: Deep Learning Branch
+# Brugada CNN Irzi Branch
 
 ## Project Structure
 
@@ -40,19 +40,18 @@ Expected project layout (relative to brugada_cnn/):
 ## Setup
 
 ```bash
-# 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Verify GPU
+# Verify GPU
 python -c "import torch; print('GPU:', torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'N/A')"
 
-# 3. Quick smoke test (5 epochs, ~5 min)
+# Quick smoke test (5 epochs, ~5 min)
 python run_pipeline.py --smoke_test
 
-# 4. Full training — both 3-lead and 12-lead (ablation)
+# Full training — both 3-lead and 12-lead (ablation)
 python run_pipeline.py
 
-# 5. Single variant
+# Single variant
 python run_pipeline.py --variant 3lead
 python run_pipeline.py --variant 12lead
 ```
@@ -145,7 +144,7 @@ If AUROC > 0.90: hybrid fusion with Person 3's CatBoost will be highly promising
 
 ---
 
-## For Person 4 (Fusion)
+## For other team/people Baca Ini
 
 Files to use:
 - `features/cnn_fold_probs.csv` -> `oof_prob_brugada` column
