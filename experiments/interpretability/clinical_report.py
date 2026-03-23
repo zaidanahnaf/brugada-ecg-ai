@@ -339,7 +339,7 @@ def generate_clinical_interpretation_report(
 
     report_text = "\n".join(lines)
 
-    with open(save_path, 'w') as f:
+    with open(save_path, 'w', encoding='utf-8') as f:
         f.write(report_text)
 
     print(f"Clinical report saved: {save_path}")

@@ -60,26 +60,37 @@ def compute_shap_oof(
         logger.info(f"SHAP computation — fold {val_fold+1}/{n_folds}")
 
         (X_train, y_train,
-         X_val, y_val,
+         X_val,   y_val,
          train_ids, val_ids,
          feat_names) = get_fold_split(fold_df, feature_df, val_fold)
 
-        feat_idx = [i for i, f in enumerate(feat_names) if f in feature_cols]
+        feat_idx    = [i for i, f in enumerate(feat_names) if f in feature_cols]
         X_train_sub = X_train[:, feat_idx]
-        X_val_sub = X_val[:, feat_idx]
-        sub_names = [feat_names[i] for i in feat_idx]
+        X_val_sub   = X_val[:,   feat_idx]
+        sub_names   = [feat_names[i] for i in feat_idx]
 
         if feature_names_used is None:
             feature_names_used = sub_names
 
         imputer, scaler = fit_scaler_imputer(X_train_sub)
-        X_train_proc = transform(X_train_sub, imputer, scaler)
-        X_val_proc = transform(X_val_sub, imputer, scaler)
+        X_train_proc    = transform(X_train_sub, imputer, scaler)
+        X_val_proc      = transform(X_val_sub,   imputer, scaler)
 
+        # Fit model dulu sebelum apapun
         model = model_factory()
         model.fit(X_train_proc, y_train)
 
-        # ── Build explainer ───────────────────────────────────────
+        # Sync feature names dengan actual features yang dipakai model
+        if hasattr(model, 'n_features_in_'):
+            n_actual   = model.n_features_in_
+            sub_names  = sub_names[:n_actual]
+            X_val_proc = X_val_proc[:, :n_actual]
+            X_train_proc = X_train_proc[:, :n_actual]
+
+        if feature_names_used is None or len(feature_names_used) != len(sub_names):
+            feature_names_used = sub_names
+
+        # Compute SHAP
         shap_vals = _compute_shap_for_fold(
             model=model,
             X_train=X_train_proc,
@@ -93,18 +104,26 @@ def compute_shap_oof(
         if shap_vals is None:
             continue
 
-        # Handle multi-output SHAP (some explainers return list)
         if isinstance(shap_vals, list):
-            shap_vals = shap_vals[1]   # Positive class
+            shap_vals = shap_vals[1]
 
-        # Ensure 2D
         if shap_vals.ndim == 1:
             shap_vals = shap_vals.reshape(1, -1)
 
+        # Truncate ke n_actual kalau masih mismatch
+        n_names = len(sub_names)
+        if shap_vals.shape[1] != n_names:
+            n = min(shap_vals.shape[1], n_names)
+            shap_vals  = shap_vals[:, :n]
+            sub_names  = sub_names[:n]
+
         all_shap.append(shap_vals)
-        all_X.append(X_val_proc)
+        all_X.append(X_val_proc[:, :shap_vals.shape[1]])
         all_y.append(y_val)
         all_ids.append(val_ids)
+
+        if len(all_shap) == 1:
+            feature_names_used = sub_names
 
     if not all_shap:
         logger.error("No SHAP values computed — check model type and shap installation.")
@@ -115,6 +134,15 @@ def compute_shap_oof(
     X_oof = np.vstack(all_X)
     y_oof = np.concatenate(all_y)
     ids_oof = np.concatenate(all_ids)
+
+    n_shap_features = shap_oof.shape[1]
+    if feature_names_used and len(feature_names_used) != n_shap_features:
+        logger.warning(
+            f"SHAP feature name mismatch: "
+            f"{len(feature_names_used)} names vs {n_shap_features} SHAP cols. "
+            f"Truncating names to match."
+        )
+        feature_names_used = feature_names_used[:n_shap_features]
 
     # Save raw SHAP matrix
     shap_df = pd.DataFrame(shap_oof, columns=feature_names_used)

@@ -34,9 +34,9 @@ def extract_signal_quality_features(
         noise_mask = (freqs >= CFG.noise_band_low_hz) & (freqs <= CFG.noise_band_high_hz)
         signal_mask = (freqs >= 1.0) & (freqs <= 30.0)
 
-        noise_energy = float(np.trapz(psd[noise_mask], freqs[noise_mask])) \
+        noise_energy = float(np.trapezoid(psd[noise_mask], freqs[noise_mask])) \
             if noise_mask.sum() > 0 else 0.0
-        signal_energy = float(np.trapz(psd[signal_mask], freqs[signal_mask])) \
+        signal_energy = float(np.trapezoid(psd[signal_mask], freqs[signal_mask])) \
             if signal_mask.sum() > 0 else 1e-9
 
         features[f"{prefix}_noise_energy"] = noise_energy
@@ -45,7 +45,7 @@ def extract_signal_quality_features(
         # Baseline drift: energy below 0.5 Hz
         drift_mask = freqs <= CFG.baseline_drift_band_hz
         features[f"{prefix}_baseline_drift"] = float(
-            np.trapz(psd[drift_mask], freqs[drift_mask])
+            np.trapezoid(psd[drift_mask], freqs[drift_mask])
         ) if drift_mask.sum() > 1 else 0.0
 
     # ── Heart Rate and RR Statistics ──────────────────────────────

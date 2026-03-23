@@ -85,15 +85,32 @@ def compute_permutation_importance_cv(
             y=y_val,
             scoring='roc_auc',
             n_repeats=n_repeats,
-            random_state=CFG.random_seed + i,
+            random_state=CFG.random_seed + val_fold,
             n_jobs=-1
         )
 
+        n_features_actual = X_val_proc.shape[1]
+        sub_names_actual  = sub_names[:n_features_actual]
+
+        if len(sub_names_actual) != len(result.importances_mean):
+            logger.warning(
+                f"Fold {val_fold}: feature name count mismatch "
+                f"({len(sub_names_actual)} names vs "
+                f"{len(result.importances_mean)} importances) — truncating"
+            )
+            n = min(len(sub_names_actual), len(result.importances_mean))
+            sub_names_actual = sub_names_actual[:n]
+            importances_mean = result.importances_mean[:n]
+            importances_std  = result.importances_std[:n]
+        else:
+            importances_mean = result.importances_mean
+            importances_std  = result.importances_std
+
         fold_df_imp = pd.DataFrame({
-            'feature': sub_names,
-            'importance_mean': result.importances_mean,
-            'importance_std': result.importances_std,
-            'val_fold': val_fold
+            'feature':          sub_names_actual,
+            'importance_mean':  importances_mean,
+            'importance_std':   importances_std,
+            'val_fold':         val_fold
         })
         fold_importances.append(fold_df_imp)
 
@@ -162,9 +179,10 @@ def compute_model_native_importance(
          train_ids, val_ids,
          feat_names) = get_fold_split(fold_df, feature_df, val_fold)
 
-        feat_idx = [i for i, f in enumerate(feat_names) if f in feature_cols]
+        feat_idx    = [i for i, f in enumerate(feat_names) if f in feature_cols]
         X_train_sub = X_train[:, feat_idx]
-        sub_names = [feat_names[i] for i in feat_idx]
+        X_val_sub   = X_val[:, feat_idx]
+        sub_names   = [feat_names[i] for i in feat_idx]
 
         imputer, scaler = fit_scaler_imputer(X_train_sub)
         X_train_proc = transform(X_train_sub, imputer, scaler)
@@ -185,10 +203,22 @@ def compute_model_native_importance(
                 logger.warning("Model has no coef_; skipping")
                 continue
 
+        # ── FIX: pastikan panjang match ───────────────────────────
+        n_actual  = min(len(sub_names), len(importances))
+        sub_names_actual = sub_names[:n_actual]
+        importances      = importances[:n_actual]
+
+        if len(sub_names) != len(importances):
+            logger.warning(
+                f"Native importance fold {val_fold}: "
+                f"name/importance length mismatch "
+                f"({len(sub_names)} vs {len(importances)}) — truncating to {n_actual}"
+            )
+
         fold_df_imp = pd.DataFrame({
-            'feature': sub_names,
+            'feature':           sub_names_actual,
             'native_importance': importances,
-            'val_fold': val_fold
+            'val_fold':          val_fold
         })
         fold_importances.append(fold_df_imp)
 

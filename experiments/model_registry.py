@@ -33,35 +33,83 @@ except ImportError:
 
 
 # ── Model 1: Logistic Regression ─────────────────────────────────
+# LR_BALANCED = {
+#     'name': 'LogReg_Balanced',
+#     'estimator': LogisticRegression(
+#         class_weight='balanced',
+#         max_iter=5000,
+#         solver='saga',
+#         random_state=42
+#     ),
+#     'param_grid': {
+#         'C': [0.001, 0.01, 0.1, 1.0, 10.0],
+#         'l1_ratio': ['0.0', '1.0'],
+#     },
+#     'search_type': 'grid',
+#     # 'notes': 'L1 = feature selection; L2 = shrinkage. Both evaluated.'
+#     'notes': 'l1_ratio=1.0 → L1 sparsity; l1_ratio=0.0 → L2 shrinkage'
+# }
+
+# LR_UNWEIGHTED = {
+#     'name': 'LogReg_Unweighted',
+#     'estimator': LogisticRegression(
+#         max_iter=5000,
+#         solver='saga',
+#         random_state=42
+#     ),
+#     'param_grid': {
+#         'C': [0.001, 0.01, 0.1, 1.0, 10.0],
+#         'l1_ratio': ['0.0', '1.0'],
+#     },
+#     'search_type': 'grid',
+#     'notes': 'Ablation: does class_weight matter for this dataset?'
+# }
+
 LR_BALANCED = {
-    'name': 'LogReg_Balanced',
+    'name': 'LogReg_Balanced_L1',
     'estimator': LogisticRegression(
         class_weight='balanced',
-        max_iter=2000,
+        max_iter=5000,
         solver='saga',
+        l1_ratio=1.0,          # L1 regularization
         random_state=42
     ),
     'param_grid': {
         'C': [0.001, 0.01, 0.1, 1.0, 10.0],
-        'penalty': ['l1', 'l2'],
     },
     'search_type': 'grid',
-    'notes': 'L1 = feature selection; L2 = shrinkage. Both evaluated.'
+    'notes': 'L1 regularization via l1_ratio=1.0 — feature selection effect'
+}
+
+LR_BALANCED_L2 = {
+    'name': 'LogReg_Balanced_L2',
+    'estimator': LogisticRegression(
+        class_weight='balanced',
+        max_iter=5000,
+        solver='saga',
+        l1_ratio=0.0,          # L2 regularization
+        random_state=42
+    ),
+    'param_grid': {
+        'C': [0.001, 0.01, 0.1, 1.0, 10.0],
+    },
+    'search_type': 'grid',
+    'notes': 'L2 regularization via l1_ratio=0.0 — shrinkage'
 }
 
 LR_UNWEIGHTED = {
-    'name': 'LogReg_Unweighted',
+    'name': 'LogReg_Unweighted_L1',
     'estimator': LogisticRegression(
-        max_iter=2000,
+        max_iter=5000,
         solver='saga',
+        l1_ratio=1.0,
         random_state=42
     ),
     'param_grid': {
         'C': [0.001, 0.01, 0.1, 1.0, 10.0],
-        'penalty': ['l1', 'l2'],
     },
     'search_type': 'grid',
-    'notes': 'Ablation: does class_weight matter for this dataset?'
+    'notes': 'Ablation: no class weight'
 }
 
 # ── Model 2: Linear SVM ───────────────────────────────────────────
@@ -221,7 +269,7 @@ CATBOOST = {
 def get_all_models() -> list:
     """Return list of valid model configs (skip None estimators)."""
     all_configs = [
-        LR_BALANCED, LR_UNWEIGHTED,
+        LR_BALANCED, LR_BALANCED_L2, LR_UNWEIGHTED,
         SVM_LINEAR, SVM_RBF,
         RF_BALANCED, BRF,
         XGB_BALANCED, LGB_BALANCED, CATBOOST

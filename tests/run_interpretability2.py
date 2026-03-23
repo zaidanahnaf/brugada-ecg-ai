@@ -1,10 +1,9 @@
-# tests/run_interpretability.py
-
 # run_interpretability.py
 
 import logging
 import pandas as pd
-from catboost import CatBoostClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 
 from src.config import CFG
 from src.fold_manager import load_folds
@@ -46,46 +45,26 @@ feature_cols = [
 ]
 
 # ── Fixed model (from Phase 3 best result) ────────────────────────
-def model_factory():
-    """
-    Best model from Stage 5: CatBoost_Balanced, feat_sel=none
-    AUROC: 0.922 ± 0.026
-    Most common best params from inner CV (5 folds):
-        learning_rate=0.1, l2_leaf_reg=3, iterations=100,
-        depth=3, border_count=32
-    """
-    from catboost import CatBoostClassifier
-    return CatBoostClassifier(
-        learning_rate=0.1,
-        l2_leaf_reg=3,
-        iterations=100,
-        depth=3,
-        border_count=32,
-        auto_class_weights='Balanced',
-        eval_metric='AUC',
-        random_seed=42,
-        verbose=0
+def lr_factory():
+    return LogisticRegression(
+        C=0.1, penalty='l1', solver='saga',
+        class_weight='balanced',
+        max_iter=2000, random_state=CFG.random_seed
     )
 
-
 def rf_factory():
-    """RF for cross-model stability check."""
-    from sklearn.ensemble import RandomForestClassifier
     return RandomForestClassifier(
-        n_estimators=300,
-        min_samples_leaf=1,
-        max_features='sqrt',
-        max_depth=None,
+        n_estimators=300, max_depth=5,
+        min_samples_leaf=3,
         class_weight='balanced_subsample',
-        random_state=42,
-        n_jobs=-1
+        random_state=CFG.random_seed, n_jobs=-1
     )
 
 
 # ── Layer 1: Permutation Importance ──────────────────────────────
 print("\n[1/6] Computing permutation importance...")
 perm_summary = compute_permutation_importance_cv(
-    model_factory=model_factory,
+    model_factory=lr_factory,
     feature_df=feature_df,
     fold_df=fold_df,
     feature_cols=feature_cols,
@@ -94,8 +73,8 @@ perm_summary = compute_permutation_importance_cv(
 )
 
 print("\n[1b] Computing RF native importance...")
-native_importance = compute_model_native_importance(
-    model_factory=model_factory,
+rf_native = compute_model_native_importance(
+    model_factory=rf_factory,
     feature_df=feature_df,
     fold_df=fold_df,
     feature_cols=feature_cols,
@@ -104,14 +83,14 @@ native_importance = compute_model_native_importance(
 )
 
 print("\n[1c] Building consensus importance ranking...")
-consensus = build_consensus_importance(perm_summary, native_importance, top_k=25)
+consensus = build_consensus_importance(perm_summary, rf_native, top_k=25)
 consensus.to_csv(f"{RESULTS_DIR}/consensus_importance.csv", index=False)
 
 
 # ── Layer 2: SHAP Analysis ─────────────────────────────────────────
 print("\n[2/6] Computing SHAP values (OOF)...")
 shap_result = compute_shap_oof(
-    model_factory=model_factory,
+    model_factory=rf_factory,
     feature_df=feature_df,
     fold_df=fold_df,
     feature_cols=feature_cols,
@@ -144,7 +123,7 @@ if shap_result:
             feature_df=feature_df,
             case_type=case_type,
             n_cases=3,
-            model_factory=model_factory,
+            model_factory=rf_factory,
             fold_df=fold_df,
             feature_cols=feature_cols,
             save_dir=f"{RESULTS_DIR}/waterfall"
@@ -181,7 +160,7 @@ error_results = run_error_analysis(
     feature_df=feature_df,
     shap_result=shap_result,
     metadata=metadata,
-    model_factory=model_factory,
+    model_factory=rf_factory,
     fold_df=fold_df,
     feature_cols=feature_cols,
     threshold=0.5,

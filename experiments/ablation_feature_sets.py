@@ -115,7 +115,8 @@ def get_ablation_feature_sets(
     Define ALL 20 ablation feature sets used in the experiment matrix.
     Returns dict: {experiment_id: [feature_col_list]}
     """
-    B = lambda inc=None, exc=None: build_feature_set(groups, inc, exc)
+    def B(include=None, exclude=None):
+        return build_feature_set(groups, include=include, exclude=exclude)
 
     sets = {
 

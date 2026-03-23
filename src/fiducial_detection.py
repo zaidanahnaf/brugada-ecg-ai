@@ -151,17 +151,43 @@ def _estimate_t_wave_window(
 ) -> Tuple[int, int]:
     """
     Estimate T-wave window relative to R-peak.
-    Uses HR-adjusted fractions of RR interval.
-    Falls back to fixed offsets if RR unavailable.
+
+    FIXED: HR-adjusted window capped strictly to beat array bounds.
+    Falls back to fixed offsets when HR-adjusted window would overflow.
+
+    With beat_window_post_ms=500ms:
+        post_samples = 50 (at 100Hz)
+        Max usable T-window end = r_sample + 49 = sample 69
+
+    Fixed fallback (180-420ms after R):
+        t_start = 20 + 18 = 38
+        t_end   = 20 + 42 = 62
+        Always fits in 70-sample beat array.
     """
+    MIN_T_WINDOW_SAMPLES = 10  # Minimum usable T-wave window
+
+    # ── Try HR-adjusted window ────────────────────────────────────
     if median_rr_ms > 400:
         rr_samples = int(median_rr_ms * fs / 1000)
-        t_start = r_sample + int(CFG.t_wave_start_fraction * rr_samples)
-        t_end = r_sample + int(CFG.t_wave_end_fraction * rr_samples)
-    else:
-        t_start = r_sample + int(CFG.t_wave_fallback_start_ms * fs / 1000)
-        t_end = r_sample + int(CFG.t_wave_fallback_end_ms * fs / 1000)
+        t_start_hr = r_sample + int(CFG.t_wave_start_fraction * rr_samples)
+        t_end_hr   = r_sample + int(CFG.t_wave_end_fraction   * rr_samples)
 
-    t_start = max(0, min(t_start, signal_length - 1))
-    t_end = max(t_start + 1, min(t_end, signal_length))
-    return t_start, t_end
+        # Cap to array bounds
+        t_start_hr = min(t_start_hr, signal_length - MIN_T_WINDOW_SAMPLES - 1)
+        t_end_hr   = min(t_end_hr,   signal_length)
+
+        if (t_start_hr >= 0 and
+                t_end_hr > t_start_hr and
+                (t_end_hr - t_start_hr) >= MIN_T_WINDOW_SAMPLES):
+            return int(t_start_hr), int(t_end_hr)
+
+    # ── Fallback: fixed offsets ───────────────────────────────────
+    # These are designed to fit within beat_window_post_ms=500ms
+    t_start = r_sample + int(CFG.t_wave_fallback_start_ms * fs / 1000)
+    t_end   = r_sample + int(CFG.t_wave_fallback_end_ms   * fs / 1000)
+
+    # Final safety cap
+    t_start = max(0, min(t_start, signal_length - MIN_T_WINDOW_SAMPLES - 1))
+    t_end   = max(t_start + MIN_T_WINDOW_SAMPLES, min(t_end, signal_length))
+
+    return int(t_start), int(t_end)

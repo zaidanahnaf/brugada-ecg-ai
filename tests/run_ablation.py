@@ -31,29 +31,53 @@ except FileNotFoundError:
 
 # ── Fix best model from Phase 3 results ──────────────────────────
 # Replace these params with actual best params from classical_ml results
+# def model_factory():
+#     """
+#     Returns a fresh estimator with FIXED hyperparameters.
+#     These are set from the best inner-CV result in Phase 3.
+#     Do NOT retune here — ablation varies features only.
+#     """
+#     return LogisticRegression(
+#         C=0.1,
+#         penalty='l1',
+#         solver='saga',
+#         class_weight='balanced',
+#         max_iter=2000,
+#         random_state=CFG.random_seed
+#     )
+
 def model_factory():
     """
-    Returns a fresh estimator with FIXED hyperparameters.
-    These are set from the best inner-CV result in Phase 3.
-    Do NOT retune here — ablation varies features only.
+    Best model from Stage 5: CatBoost_Balanced, feat_sel=none
+    AUROC: 0.922 ± 0.026
+    Most common best params from inner CV (5 folds):
+        learning_rate=0.1, l2_leaf_reg=3, iterations=100,
+        depth=3, border_count=32
     """
-    return LogisticRegression(
-        C=0.1,
-        penalty='l1',
-        solver='saga',
-        class_weight='balanced',
-        max_iter=2000,
-        random_state=CFG.random_seed
+    from catboost import CatBoostClassifier
+    return CatBoostClassifier(
+        learning_rate=0.1,
+        l2_leaf_reg=3,
+        iterations=100,
+        depth=3,
+        border_count=32,
+        auto_class_weights='Balanced',
+        eval_metric='AUC',
+        random_seed=42,
+        verbose=0
     )
 
-# Also prepare RF factory for cross-model stability check
+
 def rf_factory():
+    """RF for cross-model stability check."""
+    from sklearn.ensemble import RandomForestClassifier
     return RandomForestClassifier(
         n_estimators=300,
-        max_depth=5,
-        min_samples_leaf=3,
+        min_samples_leaf=1,
+        max_features='sqrt',
+        max_depth=None,
         class_weight='balanced_subsample',
-        random_state=CFG.random_seed,
+        random_state=42,
         n_jobs=-1
     )
 

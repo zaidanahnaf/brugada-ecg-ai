@@ -9,6 +9,7 @@ from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from typing import Dict, List, Optional
+from collections import Counter
 
 from src.config import CFG
 from src.fold_manager import load_folds, get_fold_split
@@ -94,8 +95,8 @@ def run_cv_for_model(
             model_config_fit = model_config
 
         # ── 5. Inner CV Hyperparameter Search ─────────────────────────
-        best_estimator = _inner_cv_search(
-            model_config_fit,             # ← uses stripped config
+        best_estimator, best_params, best_inner_score = _inner_cv_search(
+            model_config_fit,
             X_train_fit, y_train_fit,
             n_inner_folds=4,
             random_seed=random_seed
@@ -152,6 +153,8 @@ def run_cv_for_model(
             'n_pos_train': int(y_train_fit.sum()),
             'n_pos_val': int(y_val.sum()),
             'n_features_selected': len(selected_feats),
+            'best_params':           str(best_params),
+            'best_inner_auroc':      best_inner_score,
         }
         fold_metrics.append(fold_result)
         fold_predictions.append((y_val, y_prob_val))
@@ -175,6 +178,22 @@ def run_cv_for_model(
     # Recommended threshold for deployment: mean of fold thresholds
     cv_summary['recommended_threshold'] = float(np.mean(fold_threshold))
     cv_summary['recommended_threshold_std'] = float(np.std(fold_threshold))
+
+    # ── Best params logging ────────────────────────────────────────
+    from collections import Counter
+    
+    params_list        = [f.get('best_params', '{}') for f in fold_metrics]
+    most_common_params = Counter(params_list).most_common(1)[0][0]
+    inner_scores       = [f.get('best_inner_auroc', 0.0) for f in fold_metrics]
+
+    cv_summary['best_params_most_common']  = most_common_params
+    cv_summary['best_inner_auroc_mean']    = float(np.mean(inner_scores))
+    cv_summary['best_inner_auroc_std']     = float(np.std(inner_scores))
+
+    logger.info(
+        f"[{model_name}] Most common best params: {most_common_params} | "
+        f"Inner AUROC: {np.mean(inner_scores):.3f} ± {np.std(inner_scores):.3f}"
+    )
 
     # Feature selection stability: how often each feature was selected
     all_selected = [f for fold_feats in fold_selected_features for f in fold_feats]
@@ -209,10 +228,10 @@ def _inner_cv_search(
     y_train: np.ndarray,
     n_inner_folds: int = 4,
     random_seed: int = 42
-) -> object:
+) -> tuple:
     """
     Inner loop hyperparameter search.
-    Uses AUROC as scoring metric (threshold-independent).
+    Returns (best_estimator, best_params, best_score)
     """
     from sklearn.model_selection import StratifiedKFold
 
@@ -222,8 +241,8 @@ def _inner_cv_search(
         random_state=random_seed
     )
 
-    estimator = model_config['estimator']
-    param_grid = model_config['param_grid']
+    estimator   = model_config['estimator']
+    param_grid  = model_config['param_grid']
     search_type = model_config.get('search_type', 'grid')
 
     if search_type == 'grid':
@@ -251,11 +270,13 @@ def _inner_cv_search(
         )
 
     search.fit(X_train, y_train)
-    logger.debug(
-        f"    Inner CV best params: {search.best_params_} "
+
+    logger.info(
+        f"    Inner CV best params : {search.best_params_} "
         f"(AUROC={search.best_score_:.3f})"
     )
-    return search.best_estimator_
+
+    return search.best_estimator_, search.best_params_, float(search.best_score_)
 
 def _strip_class_weight(model_config: Dict) -> Dict:
     """
@@ -318,4 +339,4 @@ def _strip_class_weight(model_config: Dict) -> Dict:
         )
 
     new_config['estimator'] = estimator
-    return new_config
+    return new_config   

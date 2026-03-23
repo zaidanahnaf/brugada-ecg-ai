@@ -118,7 +118,7 @@ def run_error_analysis(
     fn_profile.to_csv(f"{results_dir}/fn_case_profiles.csv", index=False)
     fp_profile.to_csv(f"{results_dir}/fp_case_profiles.csv", index=False)
 
-    with open(f"{results_dir}/error_analysis_narrative.txt", 'w') as f:
+    with open(f"{results_dir}/error_analysis_narrative.txt", 'w', encoding='utf-8') as f:
         f.write(error_summary)
 
     print(f"Error analysis saved to: {results_dir}/")

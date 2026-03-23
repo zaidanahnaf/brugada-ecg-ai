@@ -6,8 +6,8 @@ from typing import List, Dict
 class PipelineConfig:
 
     # ── Dataset ──────────────────────────────────────────────────
-    data_dir: str = "data/raw"
-    metadata_path: str = "data/raw/brugada-huca-12-lead-ecg-recordings-for-the-study-of-brugada-syndrome-1.0.0/metadata.csv"
+    data_dir: str = "data/raw/brugada/files"
+    metadata_path: str = "data/raw/brugada/metadata.csv"
     fs: int = 100                          # Sampling frequency (Hz)
     signal_duration_s: float = 12.0
     n_leads: int = 12
@@ -49,8 +49,8 @@ class PipelineConfig:
     # T-wave window (relative to R-peak, HR-adjusted fallback)
     t_wave_start_fraction: float = 0.55   # of RR interval
     t_wave_end_fraction: float = 0.85     # of RR interval
-    t_wave_fallback_start_ms: float = 240.0
-    t_wave_fallback_end_ms: float = 400.0
+    t_wave_fallback_start_ms: float = 180.0
+    t_wave_fallback_end_ms: float = 420.0
 
     # Baseline reference window (relative to R-peak, pre-QRS)
     baseline_ref_start_ms: float = -180.0

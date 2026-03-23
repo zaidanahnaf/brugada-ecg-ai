@@ -8,7 +8,7 @@ import warnings
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from src.experiments.calibration import calibrate_model
+from experiments.calibration import calibrate_model
 
 warnings.filterwarnings('ignore')
 

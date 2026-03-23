@@ -10,25 +10,15 @@ from src.config import CFG
 
 logger = logging.getLogger(__name__)
 
-
 def load_record(
     patient_id: str,
     data_dir: str = CFG.data_dir
 ) -> Optional[Dict]:
     """
     Load a single WFDB record and validate it.
-
-    Returns
-    -------
-    dict with keys:
-        patient_id  : str
-        signal      : np.ndarray, shape (n_samples, n_leads)
-        fs          : int
-        lead_names  : List[str]
-        n_samples   : int
-        duration_s  : float
-        valid       : bool
-        failure_reason : str or None
+    Supports two folder structures:
+        Flat   : {data_dir}/{patient_id}.hea
+        Nested : {data_dir}/{patient_id}/{patient_id}.hea  ← your structure
     """
     result = {
         'patient_id': patient_id,
@@ -41,12 +31,25 @@ def load_record(
         'failure_reason': None
     }
 
-    record_path = str(Path(data_dir) / patient_id)
+    # ── Resolve path: try nested first, then flat ─────────────────
+    nested_path = str(Path(data_dir) / patient_id / patient_id)
+    flat_path   = str(Path(data_dir) / patient_id)
 
+    if Path(nested_path + ".hea").exists():
+        record_path = nested_path
+    elif Path(flat_path + ".hea").exists():
+        record_path = flat_path
+    else:
+        result['failure_reason'] = (
+            f"WFDB_READ_ERROR: [Errno 2] No such file or directory: "
+            f"'{flat_path}.hea' or '{nested_path}.hea'"
+        )
+        logger.error(f"[{patient_id}] {result['failure_reason']}")
+        return result
+
+    # ── Load ──────────────────────────────────────────────────────
     try:
-        record = wfdb.rdsamp(record_path)
-        signal, fields = record  # signal: (n_samples, n_leads)
-
+        signal, fields = wfdb.rdsamp(record_path)
     except Exception as e:
         result['failure_reason'] = f"WFDB_READ_ERROR: {e}"
         logger.error(f"[{patient_id}] {result['failure_reason']}")
@@ -61,7 +64,7 @@ def load_record(
         result['failure_reason'] = f"UNEXPECTED_DIMS: {signal.ndim}"
         return result
 
-    fs = fields['fs']
+    fs         = fields['fs']
     lead_names = fields['sig_name']
     n_samples, n_leads = signal.shape
 
@@ -72,33 +75,35 @@ def load_record(
     if missing_priority:
         result['failure_reason'] = f"MISSING_PRIORITY_LEADS: {missing_priority}"
         logger.warning(f"[{patient_id}] {result['failure_reason']}")
-        # Do NOT return — partial failure, mark and continue
 
     # ── Signal Range Check ────────────────────────────────────────
-    if np.any(np.abs(signal) > 10.0):   # >10 mV is physiologically implausible
-        logger.warning(f"[{patient_id}] Signal amplitude exceeds 10mV — possible unit mismatch")
+    if np.any(np.abs(signal) > 10.0):
+        logger.warning(
+            f"[{patient_id}] Signal amplitude exceeds 10mV — possible unit mismatch"
+        )
 
     # ── NaN / Inf Check ───────────────────────────────────────────
     nan_mask = ~np.isfinite(signal)
     if nan_mask.any():
-        n_bad = nan_mask.sum()
+        n_bad   = nan_mask.sum()
         pct_bad = 100 * n_bad / signal.size
         if pct_bad > 5.0:
             result['failure_reason'] = f"EXCESSIVE_NAN: {pct_bad:.1f}%"
             return result
         else:
-            # Interpolate small gaps
             signal = _interpolate_nans(signal)
-            logger.warning(f"[{patient_id}] Interpolated {n_bad} NaN samples ({pct_bad:.1f}%)")
+            logger.warning(
+                f"[{patient_id}] Interpolated {n_bad} NaN samples ({pct_bad:.1f}%)"
+            )
 
     result.update({
-        'signal': signal,
-        'fs': fs,
-        'lead_names': lead_names,
-        'n_samples': n_samples,
-        'duration_s': n_samples / fs,
-        'valid': True,
-        'failure_reason': None,
+        'signal':                 signal,
+        'fs':                     fs,
+        'lead_names':             lead_names,
+        'n_samples':              n_samples,
+        'duration_s':             n_samples / fs,
+        'valid':                  True,
+        'failure_reason':         None,
         'missing_priority_leads': missing_priority
     })
     return result

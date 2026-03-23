@@ -82,7 +82,7 @@ def extract_st_features_single_beat(
     st_win_end = fiducials['st_window_end']
     if st_win_end > st_win_start:
         st_segment = sig[st_win_start:st_win_end] - baseline
-        area = float(np.trapz(np.maximum(st_segment, 0)))
+        area = float(np.trapezoid(np.maximum(st_segment, 0)))
         features[f"{pfx}_st_area_above_baseline"] = area
     else:
         features[f"{pfx}_st_area_above_baseline"] = np.nan

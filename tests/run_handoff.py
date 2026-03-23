@@ -5,7 +5,7 @@ import pandas as pd
 from pathlib import Path
 
 from src.config import CFG
-from src.data_loader import load_metadata
+from src.data.data_loader import load_metadata
 from src.fold_manager import load_folds
 from src.feature_store import (
     generate_full_manifest,

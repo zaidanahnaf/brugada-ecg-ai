@@ -1,25 +1,36 @@
 # src/pipeline.py
 
 import numpy as np
+from packaging import metadata
+from packaging import metadata
 import pandas as pd
 import json
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional
 from src.config import CFG
-from src.data_loader import load_record, load_metadata, get_lead_index
-from src.preprocessing import preprocess_signal
-from src.beat_segmentation import detect_rpeaks, filter_beats, extract_beat_windows
+from src.data.data_loader import load_record, load_metadata, get_lead_index
+from src.preprocessing.preprocessing import preprocess_signal
+from src.preprocessing.beat_segmentation import detect_rpeaks, filter_beats, extract_beat_windows
 from src.fiducial_detection import detect_fiducials
 from src.feature_extractors.signal_quality import extract_signal_quality_features
 from src.feature_extractors.st_features import extract_st_features_single_beat
 from src.feature_extractors.morphology_features import extract_morphology_features_single_beat
 from src.feature_extractors.crosslead_features import extract_crosslead_features
-from src.aggregation import aggregate_beat_features
+from src.fold_manager import create_folds, load_folds
+from src.preprocessing.aggregation import aggregate_beat_features
 
 logger = logging.getLogger(__name__)
 
+fold_path = "data/splits/fold_assignments.csv"
 
+if Path(fold_path).exists():
+    print(f"Fold assignments already exist — loading from {fold_path}")
+    fold_df = load_folds(fold_path)
+else:
+    print("Creating fold assignments for the first time...")
+    fold_df = create_folds(metadata)
+    
 def run_subject(
     patient_id: str,
     data_dir: str = CFG.data_dir
