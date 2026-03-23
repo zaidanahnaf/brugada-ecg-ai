@@ -5,7 +5,7 @@ Strategy (from Work Package B update, confirmed 19 March):
   - Detect R-peaks using neurokit2 on lead II (or fallback to V2)
   - Extract fixed window: 200ms pre-R + 500ms post-R = 70 samples per beat
   - Filter invalid beats (too short, artifact-contaminated)
-  - Expected: ~9–14 valid beats per 12-second recording -> ~3,600 samples/fold
+  - Expected: ~9–14 valid beats per 12-second recording → ~3,600 samples/fold
 
 CRITICAL: beat-level predictions MUST be aggregated back to subject-level
           before evaluation. This module handles extraction only.
@@ -166,7 +166,7 @@ def segment_recording(
     min_beats: int = MIN_BEATS_PER_RECORD,
 ) -> Optional[np.ndarray]:
     """
-    Full pipeline: detect R-peaks -> filter -> extract beats.
+    Full pipeline: detect R-peaks → filter → extract beats.
 
     Args:
         ecg: (n_leads, n_samples) preprocessed ECG
