@@ -72,11 +72,11 @@ def extract_morphology_features_single_beat(
     coved_weight = 0.0
 
     if not np.isnan(st_slope):
-        coved += max(0.0, -st_slope * 10)   # Negative slope → coved
+        coved += max(0.0, -st_slope * 10)   # Negative slope -> coved
         coved_weight += 1.0
 
     if not np.isnan(st_convexity):
-        coved += max(0.0, st_convexity * 100)  # Positive d2 → convex → coved
+        coved += max(0.0, st_convexity * 100)  # Positive d2 -> convex -> coved
         coved_weight += 1.0
 
     t_inv = features.get(f"{pfx}_t_inversion_indicator", np.nan)
@@ -93,11 +93,11 @@ def extract_morphology_features_single_beat(
     saddle_weight = 0.0
 
     if not np.isnan(st_slope):
-        saddle += max(0.0, st_slope * 10)   # Positive slope → saddleback
+        saddle += max(0.0, st_slope * 10)   # Positive slope -> saddleback
         saddle_weight += 1.0
 
     if not np.isnan(st_convexity):
-        saddle += max(0.0, -st_convexity * 100)  # Negative d2 → concave → saddle
+        saddle += max(0.0, -st_convexity * 100)  # Negative d2 -> concave -> saddle
         saddle_weight += 1.0
 
     saddle += float(features[f"{pfx}_second_hump_present"])

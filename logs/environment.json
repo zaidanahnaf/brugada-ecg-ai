@@ -1,0 +1,8 @@
+{
+  "python": "3.10.20",
+  "torch": "2.6.0+cu124",
+  "cuda": "12.4",
+  "numpy": "2.2.6",
+  "pandas": "2.3.3",
+  "gpu": "NVIDIA GeForce RTX 3050 6GB Laptop GPU"
+}

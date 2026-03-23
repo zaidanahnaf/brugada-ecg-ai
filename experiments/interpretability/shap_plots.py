@@ -207,10 +207,10 @@ def plot_shap_waterfall_cases(
     and false positives (misclassified Normal).
 
     case_type:
-        'fn' → false negatives (Brugada predicted as Normal)
-        'fp' → false positives (Normal predicted as Brugada)
-        'tp' → true positives (correctly identified Brugada)
-        'tn' → true negatives (correctly identified Normal)
+        'fn' -> false negatives (Brugada predicted as Normal)
+        'fp' -> false positives (Normal predicted as Brugada)
+        'tp' -> true positives (correctly identified Brugada)
+        'tn' -> true negatives (correctly identified Normal)
     """
     try:
         import shap

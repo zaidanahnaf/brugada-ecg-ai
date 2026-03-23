@@ -26,7 +26,7 @@ def run_single_ablation_experiment(
     feature_subset: List[str],
     feature_df: pd.DataFrame,
     fold_df: pd.DataFrame,
-    model_factory,             # Callable: () → fitted sklearn estimator
+    model_factory,             # Callable: () -> fitted sklearn estimator
     results_dir: str = "results/ablation",
     cnn_embedding_df: Optional[pd.DataFrame] = None
 ) -> Dict:

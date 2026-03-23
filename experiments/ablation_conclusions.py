@@ -60,7 +60,7 @@ def generate_conclusions(
     conclusions['Q1_st_features_help'] = (
         f"ST features (V1–V3) {'substantially improve' if meaningful(delta_st) else 'marginally improve' if marginal(delta_st) else 'do NOT improve'} "
         f"classification over generic signal statistics. "
-        f"AUROC: {auroc_gen:.3f} (generic) → {auroc_st:.3f} (ST only), "
+        f"AUROC: {auroc_gen:.3f} (generic) -> {auroc_st:.3f} (ST only), "
         f"ΔAUROC = {delta_st:+.3f}. "
         f"Result is {'stable' if stable(std_st) else 'UNSTABLE — interpret cautiously'} "
         f"across folds (std={std_st:.3f})."
@@ -74,7 +74,7 @@ def generate_conclusions(
         f"Adding Brugada morphology features (covedness, saddleback, T-wave) "
         f"to ST features {'improves' if meaningful(delta_morph) else 'marginally improves' if marginal(delta_morph) else 'does NOT improve'} performance. "
         f"ΔAUROC = {delta_morph:+.3f} "
-        f"({auroc_st:.3f} ST-only → {auroc_stmorph:.3f} ST+Morph). "
+        f"({auroc_st:.3f} ST-only -> {auroc_stmorph:.3f} ST+Morph). "
         + (
             "Morphology features encode coved/saddleback distinction "
             "not captured by amplitude-alone ST measures."
@@ -120,7 +120,7 @@ def generate_conclusions(
             f"Hybrid (CNN + handcrafted) {'outperforms' if meaningful(delta_hybrid) else 'marginally outperforms' if marginal(delta_hybrid) else 'does NOT outperform'} "
             f"CNN alone. "
             f"ΔAUROC = {delta_hybrid:+.3f} "
-            f"(CNN={auroc_cnn:.3f} → Hybrid={auroc_hybrid:.3f}). "
+            f"(CNN={auroc_cnn:.3f} -> Hybrid={auroc_hybrid:.3f}). "
             + (
                 "Handcrafted clinical features provide complementary signal "
                 "beyond what the CNN learns end-to-end."

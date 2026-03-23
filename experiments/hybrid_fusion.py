@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════════════════
 # STRATEGY A — EARLY FUSION
-# concat(handcrafted_features, CNN_embedding) → single meta-learner
+# concat(handcrafted_features, CNN_embedding) -> single meta-learner
 # ═══════════════════════════════════════════════════════════════════════
 
 def run_early_fusion_cv(
@@ -161,9 +161,9 @@ def run_late_fusion_cv(
         Verify alignment before fusion.
 
     WEIGHT METHODS:
-        equal           → simple average (0.5, 0.5)
-        auroc_weighted  → weight by fold-level AUROC of each branch
-        optimized       → grid search over weight alpha ∈ [0,1] on each fold
+        equal           -> simple average (0.5, 0.5)
+        auroc_weighted  -> weight by fold-level AUROC of each branch
+        optimized       -> grid search over weight alpha ∈ [0,1] on each fold
                           (use with caution: 5 folds = low power for optimization)
 
     CRITICAL:
@@ -235,7 +235,7 @@ def run_late_fusion_cv(
 
 # ═══════════════════════════════════════════════════════════════════════
 # STRATEGY C — STACKING
-# OOF probs from both branches → logistic meta-learner
+# OOF probs from both branches -> logistic meta-learner
 # ═══════════════════════════════════════════════════════════════════════
 
 def run_stacking_fusion_cv(

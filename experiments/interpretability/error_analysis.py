@@ -273,13 +273,13 @@ def _generate_error_narrative(
     lines.append(f"\n  Hypotheses for false negatives:")
     lines.append(
         "  H1: Drug-induced / borderline patterns with submaximal ST elevation\n"
-        "      → ECG at baseline may not show Type 1; only visible post-sodium-channel-blocker\n"
+        "      -> ECG at baseline may not show Type 1; only visible post-sodium-channel-blocker\n"
         "  H2: Low J-point at 100 Hz sampling: true <2mm elevation misquantified\n"
-        "      → 100 Hz gives ±0.01 mV precision per sample; borderline cases ambiguous\n"
+        "      -> 100 Hz gives ±0.01 mV precision per sample; borderline cases ambiguous\n"
         "  H3: Spontaneous Type 1 pattern not present in the 12-second snapshot\n"
-        "      → Brugada pattern is dynamic; single recording may miss it\n"
-        "  H4: Poor beat quality in this subject → fiducial detection unreliable\n"
-        "      → Check n_valid_beats and j_point_confidence flags for FN cases"
+        "      -> Brugada pattern is dynamic; single recording may miss it\n"
+        "  H4: Poor beat quality in this subject -> fiducial detection unreliable\n"
+        "      -> Check n_valid_beats and j_point_confidence flags for FN cases"
     )
 
     # ── False Positive Analysis ────────────────────────────────────
@@ -307,15 +307,15 @@ def _generate_error_narrative(
     lines.append(f"\n  Hypotheses for false positives:")
     lines.append(
         "  H1: Right bundle branch block (RBBB) or incomplete RBBB\n"
-        "      → Produces rSR' pattern in V1 that mimics Brugada high-takeoff\n"
+        "      -> Produces rSR' pattern in V1 that mimics Brugada high-takeoff\n"
         "  H2: Early repolarization syndrome in young athletes\n"
-        "      → ST elevation in right precordials without Brugada morphology\n"
+        "      -> ST elevation in right precordials without Brugada morphology\n"
         "  H3: Electrode misplacement (V1/V2 too high)\n"
-        "      → Intercostal space placement error produces Brugada-like pattern\n"
-        "  H4: Noisy right precordial leads → spurious ST elevation artifact\n"
-        "      → Check snr_proxy and hf_noise features for FP cases\n"
+        "      -> Intercostal space placement error produces Brugada-like pattern\n"
+        "  H4: Noisy right precordial leads -> spurious ST elevation artifact\n"
+        "      -> Check snr_proxy and hf_noise features for FP cases\n"
         "  H5: Acute myocardial infarction (Brugada phenocopy)\n"
-        "      → ST elevation from ischemia, not sodium channelopathy"
+        "      -> ST elevation from ischemia, not sodium channelopathy"
     )
 
     # ── Pipeline Quality Check ────────────────────────────────────
@@ -323,7 +323,7 @@ def _generate_error_narrative(
     lines.append(
         "Recommended checks for all error cases:\n"
         "  1. Verify n_valid_beats ≥ 5 (low beat count = unreliable features)\n"
-        "  2. Check j_point_confidence flags (LOW_CONFIDENCE cases → noisy features)\n"
+        "  2. Check j_point_confidence flags (LOW_CONFIDENCE cases -> noisy features)\n"
         "  3. Inspect snr_proxy for V1/V2/V3 (< 2.0 = questionable signal quality)\n"
         "  4. Compare pipeline_status: are errors clustered in PARTIAL status subjects?\n"
         "  5. For FN: inspect raw ECG waveform manually for any visible Brugada pattern"

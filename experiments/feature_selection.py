@@ -73,5 +73,5 @@ def select_features_inside_fold(
     else:
         raise ValueError(f"Unknown selection method: {method}")
 
-    print(f"  Feature selection [{method}]: {X_train.shape[1]} → {X_train_sel.shape[1]}")
+    print(f"  Feature selection [{method}]: {X_train.shape[1]} -> {X_train_sel.shape[1]}")
     return X_train_sel, X_val_sel, selected, selector

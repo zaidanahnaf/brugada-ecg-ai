@@ -31,7 +31,7 @@ def test_confidence_features_written_to_matrix():
     assert abs(result['qc_V2_j_low_conf_rate'] - 0.0) < 1e-9
     assert abs(result['qc_V3_j_low_conf_rate'] - 0.6) < 1e-9
 
-    # V3 has low_conf_rate > 0.5 → any_unreliable should be 1
+    # V3 has low_conf_rate > 0.5 -> any_unreliable should be 1
     assert result['qc_any_lead_j_unreliable'] == 1
 
     # Check qc_ prefix matches config

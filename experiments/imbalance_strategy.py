@@ -45,8 +45,8 @@ def undersample_training_fold(
     """
     Apply random undersampling to training fold only.
 
-    strategy=0.5 → majority class sampled to 2× minority size
-    strategy=1.0 → balanced 1:1 (NOT recommended for this dataset)
+    strategy=0.5 -> majority class sampled to 2× minority size
+    strategy=1.0 -> balanced 1:1 (NOT recommended for this dataset)
 
     IMPORTANT:
     - Log original and post-sampling class distribution
@@ -69,7 +69,7 @@ def undersample_training_fold(
     X_res, y_res = rus.fit_resample(X_train, y_train)
 
     print(
-        f"  Undersampling: {len(y_train)} → {len(y_res)} "
+        f"  Undersampling: {len(y_train)} -> {len(y_res)} "
         f"({(y_res==1).sum()} pos, {(y_res==0).sum()} neg)"
     )
     return X_res, y_res

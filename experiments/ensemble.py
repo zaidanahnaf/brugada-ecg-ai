@@ -36,7 +36,7 @@ def build_stacking_ensemble(
         aurocs = np.array([
             roc_auc_score(y_val, base_model_probs[n]) for n in names
         ])
-        # Softmax weights: higher AUROC → higher weight
+        # Softmax weights: higher AUROC -> higher weight
         weights = np.exp(aurocs) / np.exp(aurocs).sum()
         ensemble_prob = prob_matrix @ weights
 

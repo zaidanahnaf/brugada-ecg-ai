@@ -12,7 +12,7 @@ CLINICAL_INTERPRETATIONS = {
 
     # ST features
     'j_point_amplitude': {
-        'direction': 'higher → Brugada',
+        'direction': 'higher -> Brugada',
         'physiology': (
             'J-point elevation ≥ 2mm in right precordials is the primary '
             'electrocardiographic criterion for Brugada Type 1 pattern. '
@@ -25,7 +25,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'st_j40': {
-        'direction': 'higher → Brugada (Type 1) or saddleback (Type 2)',
+        'direction': 'higher -> Brugada (Type 1) or saddleback (Type 2)',
         'physiology': (
             'ST amplitude at J+40ms reflects the sustained elevation after '
             'the J-point. In coved-type Brugada, this remains elevated but '
@@ -38,7 +38,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'st_slope_j0_j40': {
-        'direction': 'more negative → Brugada (Type 1 coved pattern)',
+        'direction': 'more negative -> Brugada (Type 1 coved pattern)',
         'physiology': (
             'The slope of ST descent immediately after the J-point '
             'is the key morphological discriminator between coved '
@@ -52,7 +52,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'st_convexity': {
-        'direction': 'more positive (convex) → Brugada Type 1',
+        'direction': 'more positive (convex) -> Brugada Type 1',
         'physiology': (
             'The second derivative of the ST segment reflects its curvature. '
             'A positive value indicates the segment curves upward '
@@ -66,7 +66,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'st_monotonicity': {
-        'direction': 'higher (monotone descent) → Brugada Type 1',
+        'direction': 'higher (monotone descent) -> Brugada Type 1',
         'physiology': (
             'A monotonically descending ST segment, without inflection '
             'points, characterizes the pure coved pattern. '
@@ -80,7 +80,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'st_area_above_baseline': {
-        'direction': 'larger → Brugada',
+        'direction': 'larger -> Brugada',
         'physiology': (
             'The area under the ST curve above baseline integrates '
             'both the height and duration of ST elevation. '
@@ -94,7 +94,7 @@ CLINICAL_INTERPRETATIONS = {
 
     # Morphology features
     't_inversion_indicator': {
-        'direction': '1 → Brugada (T-wave inverted)',
+        'direction': '1 -> Brugada (T-wave inverted)',
         'physiology': (
             'T-wave inversion after a coved ST elevation is a '
             'defining criterion for Type 1 Brugada pattern per '
@@ -108,7 +108,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'covedness_score': {
-        'direction': 'higher → Brugada Type 1',
+        'direction': 'higher -> Brugada Type 1',
         'physiology': (
             'Composite score encoding three independent Type 1 criteria: '
             '(1) negative ST slope = descending pattern, '
@@ -122,7 +122,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'saddleback_score': {
-        'direction': 'higher → NOT Type 1 Brugada (Type 2/3 or Normal variant)',
+        'direction': 'higher -> NOT Type 1 Brugada (Type 2/3 or Normal variant)',
         'physiology': (
             'Saddleback morphology (rising ST after J-point, secondary hump, '
             'upright T-wave) is characteristic of Type 2 Brugada or '
@@ -135,7 +135,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'second_hump_present': {
-        'direction': '1 → NOT Type 1 (saddleback feature)',
+        'direction': '1 -> NOT Type 1 (saddleback feature)',
         'physiology': (
             'A secondary local maximum in the ST segment after the J-point '
             'peak defines the saddleback pattern. Its presence strongly '
@@ -148,7 +148,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'high_takeoff_gt_2mm': {
-        'direction': '1 → Brugada (necessary but not sufficient)',
+        'direction': '1 -> Brugada (necessary but not sufficient)',
         'physiology': (
             'A J-point or r\'-wave amplitude ≥ 2mm (0.2 mV) in V1–V2 '
             'is required for any Brugada pattern type. Its absence '
@@ -162,7 +162,7 @@ CLINICAL_INTERPRETATIONS = {
 
     # Cross-lead features
     'cl_max_st_j40_v1v3': {
-        'direction': 'higher → Brugada',
+        'direction': 'higher -> Brugada',
         'physiology': (
             'Peak ST elevation across V1–V3 captures the most affected '
             'lead. Clinical guidelines require elevation in at least '
@@ -175,7 +175,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'cl_n_leads_t_inverted_v1v3': {
-        'direction': 'higher → Brugada',
+        'direction': 'higher -> Brugada',
         'physiology': (
             'T-wave inversion in multiple right precordial leads '
             '(V1 and V2 particularly) reinforces the Type 1 diagnosis. '
@@ -188,7 +188,7 @@ CLINICAL_INTERPRETATIONS = {
     },
 
     'cl_v1v2_slope_consistency': {
-        'direction': '1 (consistent negative slope in V1+V2) → Brugada',
+        'direction': '1 (consistent negative slope in V1+V2) -> Brugada',
         'physiology': (
             'When both V1 and V2 show the same slope direction '
             '(both descending), the pattern is more consistent with '

@@ -16,23 +16,23 @@ Rank  Feature                                           SHAP     Perm Direction 
 2     morph_V1_t_amplitude_std                        0.0016   2.5158 No clinical mapping                 ?
 3     st_V2_st_curvature_sign_mean                    0.0017   1.8178 No clinical mapping                 ?
 4     st_V1_st_curvature_sign_n_valid                 0.0029   1.3050 No clinical mapping                 ?
-5     morph_V2_saddleback_score_max                   0.0019   1.2591 higher → NOT Type 1 Brugada (Type   MEDIUM
+5     morph_V2_saddleback_score_max                   0.0019   1.2591 higher -> NOT Type 1 Brugada (Type   MEDIUM
 6     morph_V1_t_amplitude_n_valid                    0.0019   1.3422 No clinical mapping                 ?
-7     st_V3_st_area_above_baseline_n_valid            0.0013   1.5967 larger → Brugada                    MEDIUM-HIGH
-8     st_V2_st_convexity_max                          0.0011   1.5493 more positive (convex) → Brugada    MEDIUM (100Hz limits precision)
+7     st_V3_st_area_above_baseline_n_valid            0.0013   1.5967 larger -> Brugada                    MEDIUM-HIGH
+8     st_V2_st_convexity_max                          0.0011   1.5493 more positive (convex) -> Brugada    MEDIUM (100Hz limits precision)
 9     st_V1_st_curvature_sign_min                     0.0013   1.2455 No clinical mapping                 ?
-10    st_V3_st_j40_j0_ratio_mean                      0.0011   0.9418 higher → Brugada (Type 1) or sadd   HIGH
+10    st_V3_st_j40_j0_ratio_mean                      0.0011   0.9418 higher -> Brugada (Type 1) or sadd   HIGH
 11    st_V1_st_j80_j0_ratio_max                       0.0011   0.8637 No clinical mapping                 ?
 12    morph_V2_trough_depth_between_humps_min         0.0007   1.7767 No clinical mapping                 ?
 13    morph_V3_t_amplitude_mean                       0.0008   0.9857 No clinical mapping                 ?
-14    st_V2_st_convexity_mean                         0.0010   0.8466 more positive (convex) → Brugada    MEDIUM (100Hz limits precision)
+14    st_V2_st_convexity_mean                         0.0010   0.8466 more positive (convex) -> Brugada    MEDIUM (100Hz limits precision)
 15    morph_V2_t_peak_value_max                       0.0008   0.9346 No clinical mapping                 ?
 
 
 ## 3. CLINICAL COMMENTARY — TOP FEATURES
 
 ### morph_V2_saddleback_score_max
-Direction of effect : higher → NOT Type 1 Brugada (Type 2/3 or Normal variant)
+Direction of effect : higher -> NOT Type 1 Brugada (Type 2/3 or Normal variant)
 Clinical confidence : MEDIUM
 Clinical threshold  : Complementary to covedness score
 Sensitivity/Spec    : Useful for Type 1 vs Type 2 discrimination
@@ -42,7 +42,7 @@ Saddleback morphology (rising ST after J-point, secondary hump, upright T-wave) 
 
 ------------------------------------------------------------
 ### st_V3_st_area_above_baseline_n_valid
-Direction of effect : larger → Brugada
+Direction of effect : larger -> Brugada
 Clinical confidence : MEDIUM-HIGH
 Clinical threshold  : Proportional to severity
 Sensitivity/Spec    : Robust amplitude-integrated measure
@@ -52,7 +52,7 @@ The area under the ST curve above baseline integrates both the height and durati
 
 ------------------------------------------------------------
 ### st_V2_st_convexity_max
-Direction of effect : more positive (convex) → Brugada Type 1
+Direction of effect : more positive (convex) -> Brugada Type 1
 Clinical confidence : MEDIUM (100Hz limits precision)
 Clinical threshold  : Sign change is clinically meaningful
 Sensitivity/Spec    : Discriminative for coved vs saddleback
@@ -62,7 +62,7 @@ The second derivative of the ST segment reflects its curvature. A positive value
 
 ------------------------------------------------------------
 ### st_V3_st_j40_j0_ratio_mean
-Direction of effect : higher → Brugada (Type 1) or saddleback (Type 2)
+Direction of effect : higher -> Brugada (Type 1) or saddleback (Type 2)
 Clinical confidence : HIGH
 Clinical threshold  : Absolute elevation > 0.1 mV significant
 Sensitivity/Spec    : Primary Type 1 screening measure

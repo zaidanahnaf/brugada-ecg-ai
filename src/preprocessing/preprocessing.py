@@ -56,7 +56,7 @@ def _remove_baseline(
 
     Method: 'median_filter' — safe for ST preservation
     Kernel size must be > 1 full QRS complex (~600ms at 100Hz = 60 samples)
-    Use 600ms kernel → 61 samples (must be odd)
+    Use 600ms kernel -> 61 samples (must be odd)
     """
     if method == 'median_filter':
         kernel_samples = int(CFG.median_filter_kernel_ms * fs / 1000)

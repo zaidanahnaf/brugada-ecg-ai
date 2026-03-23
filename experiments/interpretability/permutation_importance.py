@@ -147,8 +147,8 @@ def compute_model_native_importance(
     """
     Extract model-native feature importance across CV folds.
 
-    tree   → model.feature_importances_ (RF / XGB / LGB)
-    linear → abs(model.coef_[0]) (LR / LinearSVM)
+    tree   -> model.feature_importances_ (RF / XGB / LGB)
+    linear -> abs(model.coef_[0]) (LR / LinearSVM)
 
     Averaged across folds for stability.
     """

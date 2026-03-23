@@ -27,9 +27,9 @@ def compute_shap_oof(
     Compute SHAP values using out-of-fold predictions only.
 
     Strategy:
-        tree   → shap.TreeExplainer (exact, fast)
-        linear → shap.LinearExplainer (exact for linear models)
-        kernel → shap.KernelExplainer (model-agnostic, slow)
+        tree   -> shap.TreeExplainer (exact, fast)
+        linear -> shap.LinearExplainer (exact for linear models)
+        kernel -> shap.KernelExplainer (model-agnostic, slow)
 
     All SHAP values are computed on the VALIDATION fold only.
     The explainer is initialized with TRAINING data as background.

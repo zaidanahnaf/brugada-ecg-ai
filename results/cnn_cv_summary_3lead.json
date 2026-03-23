@@ -1,0 +1,23 @@
+{
+  "auroc_mean": 0.9553892633883561,
+  "auroc_std": 0.017103664699450346,
+  "auprc_mean": 0.8743372993577688,
+  "auprc_std": 0.04393783875302259,
+  "sensitivity_mean": 0.9358333333333334,
+  "sensitivity_std": 0.08043285674675768,
+  "specificity_mean": 0.8712643678160921,
+  "specificity_std": 0.04309324764409187,
+  "f1_positive_mean": 0.7677830940988837,
+  "f1_positive_std": 0.025269923215742732,
+  "brier_score_mean": 0.07054197274194028,
+  "brier_score_std": 0.015927914652702234,
+  "n_parameters": 168129,
+  "variant": "3lead",
+  "model_type": "cnn",
+  "best_params": {
+    "lr": 0.0001,
+    "batch_size": 16,
+    "epochs": 150,
+    "patience": 20
+  }
+}

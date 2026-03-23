@@ -652,9 +652,9 @@ def _parse_feature_name(col: str) -> Dict:
 
     Example:
         'st_V2_st_j40_median'
-            → base_name='st_V2_st_j40', lead='V2', agg_stat='median'
+            -> base_name='st_V2_st_j40', lead='V2', agg_stat='median'
         'cl_max_st_j40_v1v3'
-            → base_name='cl_max_st_j40_v1v3', lead='multi', agg_stat='scalar'
+            -> base_name='cl_max_st_j40_v1v3', lead='multi', agg_stat='scalar'
     """
     leads     = ['V1','V2','V3','V4','V5','V6',
                  'I','II','III','aVR','aVL','aVF']

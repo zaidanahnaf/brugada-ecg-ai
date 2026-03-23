@@ -147,7 +147,7 @@ def run_subject(
 
         per_beat_all.append(beat_features)
 
-    # ── Step 8: Aggregate Beat → Subject ──────────────────────────
+    # ── Step 8: Aggregate Beat -> Subject ──────────────────────────
     aggregated = aggregate_beat_features(per_beat_all)
 
     # ── Step 9: Cross-Lead Features ───────────────────────────────
@@ -244,7 +244,7 @@ def _compute_confidence_features(
         qc_{lead}_j_low_conf_rate   : float [0, 1]
             Fraction of valid beats with LOW_CONFIDENCE J-point detection.
             0.0 = all beats had reliable J-point.
-            1.0 = every beat had uncertain J-point → feature values unreliable.
+            1.0 = every beat had uncertain J-point -> feature values unreliable.
 
         qc_{lead}_j_fallback_rate   : float [0, 1]
             Fraction of valid beats using a FALLBACK J-point estimate
