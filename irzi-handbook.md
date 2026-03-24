@@ -12,7 +12,7 @@ TASK
 Binary classification:
 
 - Class 0 = Normal
-- Class 1 = Brugada Syndrome
+- Class 1 & 2 = Brugada Syndrome
 
 DATASET
 
