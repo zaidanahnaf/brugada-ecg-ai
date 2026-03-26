@@ -1,0 +1,99 @@
+{
+  "oof_combined": {
+    "auroc": 0.9080892739429325,
+    "auprc": 0.7414848772217771,
+    "brier": 0.15161043993226478,
+    "sensitivity": 0.8243243243243243,
+    "specificity": 0.9372822299651568,
+    "threshold": 0.5639843591291329,
+    "sensitivity_at_90pct_spec": 0.8378378378378378,
+    "tp": 61,
+    "tn": 269,
+    "fp": 18,
+    "fn": 13
+  },
+  "per_fold_auroc_mean": 0.937092731829574,
+  "per_fold_auroc_std": 0.04302008628279673,
+  "per_fold_sensitivity_mean": 0.8823809523809525,
+  "per_fold_specificity_mean": 0.9199637023593465,
+  "meta_features": [
+    "prob_logreg",
+    "prob_cnn"
+  ],
+  "failed_subjects_excluded": [
+    "1230482",
+    "267630"
+  ],
+  "fold_details": [
+    {
+      "auroc": 0.9316502463054187,
+      "auprc": 0.7609779770494056,
+      "brier": 0.12499026261959109,
+      "sensitivity": 0.9285714285714286,
+      "specificity": 0.8620689655172413,
+      "threshold": 0.4792002061964582,
+      "sensitivity_at_90pct_spec": 0.5,
+      "tp": 13,
+      "tn": 50,
+      "fp": 8,
+      "fn": 1,
+      "fold_id": 0
+    },
+    {
+      "auroc": 0.9862068965517242,
+      "auprc": 0.9572829131652661,
+      "brier": 0.1975224939190739,
+      "sensitivity": 0.9333333333333333,
+      "specificity": 0.9482758620689655,
+      "threshold": 0.5375678549990287,
+      "sensitivity_at_90pct_spec": 0.9333333333333333,
+      "tp": 14,
+      "tn": 55,
+      "fp": 3,
+      "fn": 1,
+      "fold_id": 1
+    },
+    {
+      "auroc": 0.9013157894736842,
+      "auprc": 0.8319189980965477,
+      "brier": 0.09978707021212531,
+      "sensitivity": 0.75,
+      "specificity": 0.9824561403508771,
+      "threshold": 0.7540175973230739,
+      "sensitivity_at_90pct_spec": 0.75,
+      "tp": 12,
+      "tn": 56,
+      "fp": 1,
+      "fn": 4,
+      "fold_id": 2
+    },
+    {
+      "auroc": 0.8807017543859649,
+      "auprc": 0.6905982905982907,
+      "brier": 0.19894405132556153,
+      "sensitivity": 0.8,
+      "specificity": 0.8947368421052632,
+      "threshold": 0.46041876925454844,
+      "sensitivity_at_90pct_spec": 0.6666666666666666,
+      "tp": 12,
+      "tn": 51,
+      "fp": 6,
+      "fn": 3,
+      "fold_id": 3
+    },
+    {
+      "auroc": 0.9855889724310777,
+      "auprc": 0.9439925988798168,
+      "brier": 0.13668309901294431,
+      "sensitivity": 1.0,
+      "specificity": 0.9122807017543859,
+      "threshold": 0.7661158726994499,
+      "sensitivity_at_90pct_spec": 1.0,
+      "tp": 14,
+      "tn": 52,
+      "fp": 5,
+      "fn": 0,
+      "fold_id": 4
+    }
+  ]
+}

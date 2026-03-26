@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from src.models.cnn_model import SimpleCNN1D
+from cnn_model import SimpleCNN1D
 
 
 class HybridCNN(nn.Module):
