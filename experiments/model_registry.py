@@ -235,6 +235,9 @@ CATBOOST = {
 def get_all_models() -> list:
     """Return list of valid model configs (skip None estimators)."""
     all_configs = [
-        CATBOOST
+        LR_BALANCED, LR_BALANCED_L2, LR_UNWEIGHTED,
+        SVM_LINEAR, SVM_RBF,
+        RF_BALANCED, BRF,
+        XGB_BALANCED, LGB_BALANCED, CATBOOST
     ]
     return [m for m in all_configs if m.get('estimator') is not None]
