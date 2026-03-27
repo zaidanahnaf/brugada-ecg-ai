@@ -6,13 +6,13 @@ import pandas as pd
 import logging
 from pathlib import Path
 from typing import Optional, Tuple, Dict
-from src.config import CFG
+from src.config.__init__ import CFG # sementara awal:(from src.config.__init__ import CFG)
 
 logger = logging.getLogger(__name__)
 
 def load_record(
     patient_id: str,
-    data_dir: str = CFG.data_dir
+    data_dir: str = CFG.data.data_dir
 ) -> Optional[Dict]:
     """
     Load a single WFDB record and validate it.
@@ -70,7 +70,7 @@ def load_record(
 
     # ── Lead Validation ───────────────────────────────────────────
     missing_priority = [
-        l for l in CFG.priority_leads if l not in lead_names
+        l for l in CFG.data.priority_leads if l not in lead_names
     ]
     if missing_priority:
         result['failure_reason'] = f"MISSING_PRIORITY_LEADS: {missing_priority}"
@@ -129,7 +129,7 @@ def get_lead_index(lead_names: list, lead: str) -> Optional[int]:
         return None
 
 
-def load_metadata(path: str = CFG.metadata_path) -> pd.DataFrame:
+def load_metadata(path: str = CFG.data.metadata_path) -> pd.DataFrame:
     """Load and validate metadata CSV."""
     df = pd.read_csv(path)
     required = ['patient_id', 'brugada']
@@ -137,4 +137,20 @@ def load_metadata(path: str = CFG.metadata_path) -> pd.DataFrame:
     if missing:
         raise ValueError(f"Metadata missing required columns: {missing}")
     df['patient_id'] = df['patient_id'].astype(str)
+
+    # raw labels: 0 = non-brugada, 1 = brugada type 1, 2 = brugada type 2
+    print("Raw label distribution:")
+    print(df['brugada'].value_counts())
+
+    # Handling Multilabel Mapping (if needed in future):
+    df['brugada'] = (df['brugada'] >= 1).astype(int) # Map 'brugada type 2' (2) to 'brugada' (1)
+    
+    unique_vals = set(df['brugada'].unique()) # Check for unexpected labels
+    if not unique_vals.issubset({0, 1}):
+        raise ValueError(f"Invalid labels after mapping: {unique_vals}")
+
+    # Handling Result
+    print("Cleaned label distribution:")
+    print(df['brugada'].value_counts())
+    
     return df

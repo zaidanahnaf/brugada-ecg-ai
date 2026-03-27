@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Callable, Optional
 
-from src.config import CFG
+from src.config.__init__ import CFG
 from src.fold_manager import load_folds, get_fold_split
 from src.feature_store import fit_scaler_imputer, transform
 from experiments.calibration import calibrate_model
@@ -21,7 +21,7 @@ def compute_shap_oof(
     feature_cols: List[str],
     model_type: str = 'tree',    # 'tree' | 'linear' | 'kernel'
     max_kernel_samples: int = 100,
-    results_dir: str = "results/interpretability"
+    results_dir: str = "outputs/results/interpretability"
 ) -> Dict:
     """
     Compute SHAP values using out-of-fold predictions only.
@@ -224,7 +224,7 @@ def _compute_shap_for_fold(
 
 def compute_shap_summaries(
     shap_result: Dict,
-    results_dir: str = "results/interpretability"
+    results_dir: str = "outputs/results/interpretability"
 ) -> Dict[str, pd.DataFrame]:
     """
     Compute aggregated SHAP summaries:

@@ -9,7 +9,7 @@ def test_confidence_features_written_to_matrix():
     import numpy as np
     from unittest.mock import patch, MagicMock
     from src.pipeline import _compute_confidence_features
-    from src.config import CFG
+    from src.config.__init__ import CFG
 
     # Test _compute_confidence_features directly
     mock_counts = {
@@ -35,7 +35,7 @@ def test_confidence_features_written_to_matrix():
     assert result['qc_any_lead_j_unreliable'] == 1
 
     # Check qc_ prefix matches config
-    qc_keys = [k for k in result if k.startswith(CFG.qc_feature_prefix)]
+    qc_keys = [k for k in result if k.startswith(CFG.feature.qc_feature_prefix)]
     assert len(qc_keys) == len(result), \
         "All confidence feature keys must start with qc_ prefix"
 
@@ -50,13 +50,13 @@ def test_qc_columns_excluded_from_fold_split():
     import pandas as pd
     import numpy as np
     from src.fold_manager import get_fold_split
-    from src.config import CFG
+    from src.config.__init__ import CFG
 
     # Minimal mock feature_df with qc_ columns
     n = 20
     mock_df = pd.DataFrame({
         'patient_id': [f'P{i:03d}' for i in range(n)],
-        CFG.target_col: [0]*15 + [1]*5,
+        CFG.data.target_col: [0]*15 + [1]*5,
         'pipeline_status': ['OK'] * n,
         'n_valid_beats': [10] * n,
         'st_V1_st_j40_median': np.random.randn(n),
@@ -66,7 +66,7 @@ def test_qc_columns_excluded_from_fold_split():
     })
     mock_fold_df = pd.DataFrame({
         'patient_id': [f'P{i:03d}' for i in range(n)],
-        CFG.target_col: [0]*15 + [1]*5,
+        CFG.data.target_col: [0]*15 + [1]*5,
         'fold_id': [i % 5 for i in range(n)]
     })
 

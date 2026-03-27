@@ -2,7 +2,7 @@
 
 import numpy as np
 from typing import Dict, List
-from src.config import CFG
+from src.config.__init__ import CFG
 
 
 def extract_st_features_single_beat(
@@ -10,7 +10,7 @@ def extract_st_features_single_beat(
     lead_idx: int,
     fiducials: Dict,
     lead_name: str,
-    fs: int = CFG.fs
+    fs: int = CFG.data.fs
 ) -> Dict[str, float]:
     """
     Extract ST-segment features for one beat on one lead.
@@ -42,11 +42,11 @@ def extract_st_features_single_beat(
     # ── J-Point Amplitude ─────────────────────────────────────────
     j_amp = float(sig[j] - baseline)
     features[f"{pfx}_j_point_amplitude"] = j_amp
-    features[f"{pfx}_high_takeoff_gt_2mm"] = int(j_amp >= CFG.high_takeoff_2mm_mv)
-    features[f"{pfx}_high_takeoff_gt_1mm"] = int(j_amp >= CFG.high_takeoff_1mm_mv)
+    features[f"{pfx}_high_takeoff_gt_2mm"] = int(j_amp >= CFG.feature.high_takeoff_2mm_mv)
+    features[f"{pfx}_high_takeoff_gt_1mm"] = int(j_amp >= CFG.feature.high_takeoff_1mm_mv)
 
     # ── ST Amplitudes at Fixed Offsets ────────────────────────────
-    for offset_ms in CFG.st_offsets_ms:
+    for offset_ms in CFG.preprocessing.st_offsets_ms:
         st_idx = st_samples.get(offset_ms)
         if st_idx is not None and st_idx < len(sig):
             features[f"{pfx}_st_j{int(offset_ms)}"] = float(sig[st_idx] - baseline)

@@ -31,40 +31,6 @@ try:
 except ImportError:
     HAS_BRF = False
 
-
-# ── Model 1: Logistic Regression ─────────────────────────────────
-# LR_BALANCED = {
-#     'name': 'LogReg_Balanced',
-#     'estimator': LogisticRegression(
-#         class_weight='balanced',
-#         max_iter=5000,
-#         solver='saga',
-#         random_state=42
-#     ),
-#     'param_grid': {
-#         'C': [0.001, 0.01, 0.1, 1.0, 10.0],
-#         'l1_ratio': ['0.0', '1.0'],
-#     },
-#     'search_type': 'grid',
-#     # 'notes': 'L1 = feature selection; L2 = shrinkage. Both evaluated.'
-#     'notes': 'l1_ratio=1.0 → L1 sparsity; l1_ratio=0.0 → L2 shrinkage'
-# }
-
-# LR_UNWEIGHTED = {
-#     'name': 'LogReg_Unweighted',
-#     'estimator': LogisticRegression(
-#         max_iter=5000,
-#         solver='saga',
-#         random_state=42
-#     ),
-#     'param_grid': {
-#         'C': [0.001, 0.01, 0.1, 1.0, 10.0],
-#         'l1_ratio': ['0.0', '1.0'],
-#     },
-#     'search_type': 'grid',
-#     'notes': 'Ablation: does class_weight matter for this dataset?'
-# }
-
 LR_BALANCED = {
     'name': 'LogReg_Balanced_L1',
     'estimator': LogisticRegression(
@@ -269,9 +235,6 @@ CATBOOST = {
 def get_all_models() -> list:
     """Return list of valid model configs (skip None estimators)."""
     all_configs = [
-        LR_BALANCED, LR_BALANCED_L2, LR_UNWEIGHTED,
-        SVM_LINEAR, SVM_RBF,
-        RF_BALANCED, BRF,
-        XGB_BALANCED, LGB_BALANCED, CATBOOST
+        CATBOOST
     ]
     return [m for m in all_configs if m.get('estimator') is not None]

@@ -7,7 +7,7 @@ def test_undersample_strips_class_weight():
     """
     from sklearn.linear_model import LogisticRegression
     from sklearn.base import clone
-    from experiments.classical_ml import _strip_class_weight
+    from experiments.models.classical_ml import _strip_class_weight
 
     original_config = {
         'name': 'TestLR',
@@ -35,7 +35,7 @@ def test_undersample_strips_class_weight():
 def test_undersample_strips_xgb_scale_pos_weight():
     try:
         from xgboost import XGBClassifier
-        from experiments.classical_ml import _strip_class_weight
+        from experiments.models.classical_ml import _strip_class_weight
 
         original_config = {
             'name': 'TestXGB',

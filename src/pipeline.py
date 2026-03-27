@@ -8,17 +8,17 @@ import json
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional
-from src.config import CFG
+from src.config.__init__ import CFG
 from src.data.data_loader import load_record, load_metadata, get_lead_index
 from src.preprocessing.preprocessing import preprocess_signal
-from src.preprocessing.beat_segmentation import detect_rpeaks, filter_beats, extract_beat_windows
-from src.fiducial_detection import detect_fiducials
+from src.preprocessing.segmentation_method.beat_segmentation import detect_rpeaks, filter_beats, extract_beat_windows
+from src.fiducial.fiducial_detection import detect_fiducials
 from src.feature_extractors.signal_quality import extract_signal_quality_features
 from src.feature_extractors.st_features import extract_st_features_single_beat
 from src.feature_extractors.morphology_features import extract_morphology_features_single_beat
 from src.feature_extractors.crosslead_features import extract_crosslead_features
 from src.fold_manager import create_folds, load_folds
-from src.preprocessing.aggregation import aggregate_beat_features
+from src.preprocessing.cleaning_method.aggregation import aggregate_beat_features
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ else:
     
 def run_subject(
     patient_id: str,
-    data_dir: str = CFG.data_dir
+    data_dir: str = CFG.data.data_dir
 ) -> Dict:
     """
     Full pipeline for one subject.
@@ -81,7 +81,7 @@ def run_subject(
         result['failure_reason'] = rpeak_result['failure_reason']
         return result
 
-    if rpeak_result['method_used'] != CFG.rpeak_method:
+    if rpeak_result['method_used'] != CFG.preprocessing.rpeak_method:
         result['warnings'].append(f"RPEAK_FALLBACK:{rpeak_result['method_used']}")
 
     # ── Step 4: Beat Filtering ────────────────────────────────────
@@ -114,13 +114,13 @@ def run_subject(
     # Confidence accumulators: {lead: {'low': int, 'fallback': int, 'total': int}}
     confidence_counts = {
         lead: {'low': 0, 'fallback': 0, 'total': 0}
-        for lead in CFG.priority_leads
+        for lead in CFG.data.priority_leads
     }
 
     for beat_idx, beat in enumerate(beats):
         beat_features = {}
 
-        for lead in CFG.priority_leads:
+        for lead in CFG.data.priority_leads:
             lead_idx = get_lead_index(lead_names, lead)
             if lead_idx is None:
                 result['warnings'].append(
@@ -187,8 +187,8 @@ def run_subject(
 def run_full_pipeline(
     patient_ids: List[str],
     metadata: pd.DataFrame,
-    data_dir: str = CFG.data_dir,
-    output_dir: str = CFG.features_dir
+    data_dir: str = CFG.data.data_dir,
+    output_dir: str = CFG.feature.features_dir
 ) -> pd.DataFrame:
     """
     Run pipeline for all subjects.
@@ -224,7 +224,7 @@ def run_full_pipeline(
 
     # Merge labels
     feature_df = feature_df.merge(
-        metadata[['patient_id', CFG.target_col]],
+        metadata[['patient_id', CFG.data.target_col]],
         on='patient_id', how='left'
     )
 

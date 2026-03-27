@@ -2,7 +2,7 @@
 
 import logging
 import pandas as pd
-from src.config import CFG
+from src.config.__init__ import CFG
 from src.data_loader import load_metadata
 from src.fold_manager import create_folds
 from src.pipeline import run_full_pipeline
@@ -11,14 +11,14 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(name)s — %(message)s',
     handlers=[
-        logging.FileHandler(f"{CFG.logs_dir}/pipeline.log"),
+        logging.FileHandler(f"{CFG.feature.logs_dir}/pipeline.log"),
         logging.StreamHandler()
     ]
 )
 
 def main():
     # Load metadata
-    metadata = load_metadata(CFG.metadata_path)
+    metadata = load_metadata(CFG.data.metadata_path)
     patient_ids = metadata['patient_id'].astype(str).tolist()
 
     # Create folds ONCE — deterministic
@@ -28,8 +28,8 @@ def main():
     feature_df = run_full_pipeline(
         patient_ids=patient_ids,
         metadata=metadata,
-        data_dir=CFG.data_dir,
-        output_dir=CFG.features_dir
+        data_dir=CFG.data.data_dir,
+        output_dir=CFG.feature.features_dir
     )
 
     print(f"\nFeature matrix shape: {feature_df.shape}")

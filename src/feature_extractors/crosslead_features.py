@@ -2,7 +2,7 @@
 
 import numpy as np
 from typing import Dict
-from src.config import CFG
+from src.config.__init__ import CFG
 
 
 def extract_crosslead_features(
@@ -13,7 +13,7 @@ def extract_crosslead_features(
     Call AFTER subject-level aggregation (operating on median values).
     """
     features = {}
-    priority = CFG.priority_leads   # ['V1', 'V2', 'V3']
+    priority = CFG.data.priority_leads   # ['V1', 'V2', 'V3']
 
     # ── ST Elevation Aggregates ───────────────────────────────────
     st40_vals = [
@@ -71,11 +71,11 @@ def extract_crosslead_features(
     ]
 
     features['cl_n_leads_coved_v1v3'] = float(
-        sum(s >= CFG.covedness_threshold
+        sum(s >= CFG.feature.covedness_threshold
             for s in coved_scores if not np.isnan(s))
     )
     features['cl_n_leads_saddleback_v1v3'] = float(
-        sum(s >= CFG.saddleback_threshold
+        sum(s >= CFG.feature.saddleback_threshold
             for s in saddle_scores if not np.isnan(s))
     )
     features['cl_n_leads_t_inverted_v1v3'] = float(

@@ -22,7 +22,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from typing import Dict, List, Tuple, Optional
 
-from src.config import CFG
+from src.config.__init__ import CFG
 
 logger = logging.getLogger(__name__)
 
@@ -228,7 +228,7 @@ FEATURE_METADATA_REGISTRY = {
 def generate_full_manifest(
     feature_df: pd.DataFrame,
     fold_dependent_features: List[str] = None,
-    save_path: str = "features/feature_manifest.json"
+    save_path: str = "outputs/features/feature_manifest.json"
 ) -> Dict:
     """
     Generate and save the complete feature manifest JSON.
@@ -239,7 +239,7 @@ def generate_full_manifest(
     Path(save_path).parent.mkdir(parents=True, exist_ok=True)
 
     target_meta = [
-        'patient_id', CFG.target_col,
+        'patient_id', CFG.data.target_col,
         'pipeline_status', 'n_valid_beats'
     ]
     feature_cols = [c for c in feature_df.columns if c not in target_meta]
@@ -251,8 +251,8 @@ def generate_full_manifest(
     manifest['n_subjects_failed']  = int((feature_df['pipeline_status'] == 'FAILED').sum())
     manifest['fold_dependent_features'] = fold_dependent_features or []
 
-    brugada_df = feature_df[feature_df[CFG.target_col] == 1]
-    normal_df  = feature_df[feature_df[CFG.target_col] == 0]
+    brugada_df = feature_df[feature_df[CFG.data.target_col] == 1]
+    normal_df  = feature_df[feature_df[CFG.data.target_col] == 0]
 
     feature_entries = []
     for col in feature_cols:
@@ -338,7 +338,7 @@ def get_clean_feature_matrix(
 
     retained = [c for c in feature_cols if c not in drop_cols]
     return feature_df[
-        ['patient_id', CFG.target_col, 'pipeline_status', 'n_valid_beats']
+        ['patient_id', CFG.data.target_col, 'pipeline_status', 'n_valid_beats']
         + retained
     ], retained
 
@@ -391,21 +391,21 @@ def export_scaled_feature_matrices(
     feature_df: pd.DataFrame,
     fold_df: pd.DataFrame,
     feature_cols: List[str],
-    output_dir: str = "features/scaled"
+    output_dir: str = "outputs/features/scaled"
 ) -> None:
     """
     Export fold-safe standardized feature matrices for each CV fold.
 
     For each fold k produces:
-        features/scaled/fold_k/train_X.npy
-        features/scaled/fold_k/train_y.npy
-        features/scaled/fold_k/train_ids.csv   ← CSV not .npy (string IDs)
-        features/scaled/fold_k/val_X.npy
-        features/scaled/fold_k/val_y.npy
-        features/scaled/fold_k/val_ids.csv
-        features/scaled/fold_k/imputer.pkl
-        features/scaled/fold_k/scaler.pkl
-        features/scaled/fold_k/feature_names.json
+        outputs/features/scaled/fold_k/train_X.npy
+        outputs/features/scaled/fold_k/train_y.npy
+        outputs/features/scaled/fold_k/train_ids.csv   ← CSV not .npy (string IDs)
+        outputs/features/scaled/fold_k/val_X.npy
+        outputs/features/scaled/fold_k/val_y.npy
+        outputs/features/scaled/fold_k/val_ids.csv
+        outputs/features/scaled/fold_k/imputer.pkl
+        outputs/features/scaled/fold_k/scaler.pkl
+        outputs/features/scaled/fold_k/feature_names.json
 
     CONTRACT FOR PERSON 2:
         - Imputer and scaler are fit on training split ONLY
@@ -489,14 +489,14 @@ def export_top_k_feature_set(
     feature_df: pd.DataFrame,
     consensus_importance: pd.DataFrame,
     k_values: List[int] = None,
-    output_dir: str = "features/reduced"
+    output_dir: str = "outputs/features/reduced"
 ) -> Dict[int, List[str]]:
     """
     Export reduced feature sets based on consensus importance ranking.
 
     Produces for each k:
-        features/reduced/top_k_{k}_feature_names.json
-        features/reduced/top_k_{k}_feature_matrix.csv
+        outputs/features/reduced/top_k_{k}_feature_names.json
+        outputs/features/reduced/top_k_{k}_feature_matrix.csv
 
     Rationale for reduction:
         363 subjects + 64-128 CNN dims + 121 HC features = overfit risk
@@ -534,7 +534,7 @@ def export_top_k_feature_set(
 
         # Reduced feature matrix
         keep_cols = (
-            ['patient_id', CFG.target_col]
+            ['patient_id', CFG.data.target_col]
             + [c for c in top_features if c in feature_df.columns]
         )
         feature_df[keep_cols].to_csv(
@@ -556,7 +556,7 @@ def save_oof_predictions(
     model_factory,
     feature_cols: List[str],
     model_name: str,
-    save_path: str = "features/oof_predictions_handcrafted.csv"
+    save_path: str = "outputs/features/oof_predictions_handcrafted.csv"
 ) -> pd.DataFrame:
     """
     Generate and save out-of-fold probability predictions.
@@ -608,7 +608,7 @@ def save_oof_predictions(
         for pid, prob, label in zip(val_ids, fold_probs, y_val):
             all_preds.append({
                 'patient_id':       pid,
-                CFG.target_col:     int(label),
+                CFG.data.target_col:     int(label),
                 'oof_prob_brugada': float(prob),
                 'fold_id':          val_fold,
                 'model_name':       model_name

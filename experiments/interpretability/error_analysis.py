@@ -5,7 +5,7 @@ import pandas as pd
 from typing import Dict, List, Optional
 from pathlib import Path
 
-from src.config import CFG
+from src.config.__init__ import CFG
 
 
 def run_error_analysis(
@@ -16,7 +16,7 @@ def run_error_analysis(
     fold_df: pd.DataFrame,
     feature_cols: List[str],
     threshold: float = 0.5,
-    results_dir: str = "results/interpretability"
+    results_dir: str = "outputs/results/interpretability"
 ) -> Dict[str, pd.DataFrame]:
     """
     Comprehensive error analysis.

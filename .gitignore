@@ -33,4 +33,10 @@ Thumbs.db
 .idea/
 
 # Logs
-*.log
+.logs
+
+# Misc
+.experiments/ablation
+.experiments/run_ablation
+.scripts/debug
+.tests/smoketest

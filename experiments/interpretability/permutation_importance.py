@@ -8,7 +8,7 @@ from sklearn.metrics import roc_auc_score
 from typing import Dict, List, Tuple, Callable
 from pathlib import Path
 
-from src.config import CFG
+from src.config.__init__ import CFG
 from src.fold_manager import load_folds, get_fold_split
 from src.feature_store import fit_scaler_imputer, transform
 from experiments.calibration import calibrate_model
@@ -22,7 +22,7 @@ def compute_permutation_importance_cv(
     fold_df: pd.DataFrame,
     feature_cols: List[str],
     n_repeats: int = 30,
-    results_dir: str = "results/interpretability"
+    results_dir: str = "outputs/results/interpretability"
 ) -> pd.DataFrame:
     """
     Compute permutation importance using out-of-fold validation sets.
@@ -85,7 +85,7 @@ def compute_permutation_importance_cv(
             y=y_val,
             scoring='roc_auc',
             n_repeats=n_repeats,
-            random_state=CFG.random_seed + val_fold,
+            random_state=CFG.feature.random_seed + val_fold,
             n_jobs=-1
         )
 
@@ -159,7 +159,7 @@ def compute_model_native_importance(
     fold_df: pd.DataFrame,
     feature_cols: List[str],
     model_type: str = 'tree',   # 'tree' | 'linear'
-    results_dir: str = "results/interpretability"
+    results_dir: str = "outputs/results/interpretability"
 ) -> pd.DataFrame:
     """
     Extract model-native feature importance across CV folds.

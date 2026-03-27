@@ -16,7 +16,7 @@ warnings.filterwarnings('ignore')
 def plot_shap_beeswarm(
     shap_result: Dict,
     top_k: int = 25,
-    save_path: str = "results/interpretability/shap_beeswarm.png"
+    save_path: str = "outputs/results/interpretability/shap_beeswarm.png"
 ):
     """
     SHAP beeswarm plot for top-K features.
@@ -64,7 +64,7 @@ def plot_shap_beeswarm(
 def plot_shap_bar(
     global_summary: pd.DataFrame,
     top_k: int = 20,
-    save_path: str = "results/interpretability/shap_bar.png"
+    save_path: str = "outputs/results/interpretability/shap_bar.png"
 ):
     """
     Horizontal bar chart of mean |SHAP| for top features.
@@ -128,7 +128,7 @@ def plot_shap_bar(
 
 def plot_lead_importance(
     lead_summary: pd.DataFrame,
-    save_path: str = "results/interpretability/lead_importance.png"
+    save_path: str = "outputs/results/interpretability/lead_importance.png"
 ):
     """
     Bar chart of SHAP importance aggregated by lead.
@@ -199,7 +199,7 @@ def plot_shap_waterfall_cases(
     model_factory=None,
     fold_df=None,
     feature_cols=None,
-    save_dir: str = "results/interpretability/waterfall"
+    save_dir: str = "outputs/results/interpretability/waterfall"
 ):
     """
     SHAP waterfall plots for selected individual cases.

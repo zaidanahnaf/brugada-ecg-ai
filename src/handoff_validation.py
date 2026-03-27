@@ -14,18 +14,18 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from src.config import CFG
+from src.config.__init__ import CFG
 
 logger = logging.getLogger(__name__)
 
 
 def validate_all_handoff_files(
-    feature_matrix_path:    str = "features/feature_matrix.csv",
-    feature_manifest_path:  str = "features/feature_manifest.json",
+    feature_matrix_path:    str = "outputs/features/feature_matrix.csv",
+    feature_manifest_path:  str = "outputs/features/feature_manifest.json",
     fold_assignments_path:  str = "data/splits/fold_assignments.csv",
-    oof_probs_hc_path:      str = "features/oof_predictions_handcrafted.csv",
-    cnn_embeddings_path:    str = "features/cnn_embeddings.csv",
-    cnn_oof_probs_path:     str = "features/cnn_fold_probs.csv",
+    oof_probs_hc_path:      str = "outputs/features/oof_predictions_handcrafted.csv",
+    cnn_embeddings_path:    str = "outputs/features/cnn_embeddings.csv",
+    cnn_oof_probs_path:     str = "outputs/features/cnn_fold_probs.csv",
     expected_n_subjects:    int = 363,
     expected_n_positive:    int = 76,
     expected_n_folds:       int = 5
@@ -113,11 +113,11 @@ def _validate_fold_assignments(
     if not checks['fold_n_subjects']:
         logger.error(f"Fold: expected {expected_n} rows, got {len(df)}")
 
-    checks['fold_n_positive'] = int(df[CFG.target_col].sum()) == expected_pos
+    checks['fold_n_positive'] = int(df[CFG.data.target_col].sum()) == expected_pos
     if not checks['fold_n_positive']:
         logger.error(
             f"Fold: expected {expected_pos} positive, "
-            f"got {int(df[CFG.target_col].sum())}"
+            f"got {int(df[CFG.data.target_col].sum())}"
         )
 
     actual_folds = df['fold_id'].nunique()
@@ -155,8 +155,8 @@ def _check_fold_stratification(
     ok = True
     for f in range(n_folds):
         fold_data = fold_df[fold_df['fold_id'] == f]
-        pos_rate = fold_data[CFG.target_col].mean()
-        global_rate = fold_df[CFG.target_col].mean()
+        pos_rate = fold_data[CFG.data.target_col].mean()
+        global_rate = fold_df[CFG.data.target_col].mean()
         # Allow ±30% deviation from global rate
         if abs(pos_rate - global_rate) / global_rate > 0.30:
             logger.warning(
@@ -193,7 +193,7 @@ def _validate_feature_matrix(
         )
 
     # Required columns present
-    required = ['patient_id', CFG.target_col, 'pipeline_status']
+    required = ['patient_id', CFG.data.target_col, 'pipeline_status']
     missing = [c for c in required if c not in feat_df.columns]
     checks['feat_required_cols'] = len(missing) == 0
     if missing:
@@ -290,12 +290,12 @@ def _check_label_consistency(
     oof_hc_path: str,
     oof_cnn_path: str
 ) -> bool:
-    hc = pd.read_csv(oof_hc_path)[['patient_id', CFG.target_col]]
-    cnn = pd.read_csv(oof_cnn_path)[['patient_id', CFG.target_col]]
+    hc = pd.read_csv(oof_hc_path)[['patient_id', CFG.data.target_col]]
+    cnn = pd.read_csv(oof_cnn_path)[['patient_id', CFG.data.target_col]]
 
     merged = hc.merge(cnn, on='patient_id', suffixes=('_hc', '_cnn'))
     mismatches = (
-        merged[f'{CFG.target_col}_hc'] != merged[f'{CFG.target_col}_cnn']
+        merged[f'{CFG.data.target_col}_hc'] != merged[f'{CFG.data.target_col}_cnn']
     ).sum()
 
     if mismatches > 0:

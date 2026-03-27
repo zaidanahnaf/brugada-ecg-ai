@@ -3,16 +3,16 @@
 import numpy as np
 from scipy.signal import butter, filtfilt, medfilt
 from typing import Optional
-from src.config import CFG
+from src.config.__init__ import CFG
 
 
 def preprocess_signal(
     signal: np.ndarray,
-    fs: int = CFG.fs,
-    apply_baseline_removal: bool = CFG.apply_baseline_removal,
-    baseline_method: str = CFG.baseline_removal_method,
-    apply_bandpass: bool = CFG.apply_bandpass,
-    apply_notch: bool = CFG.apply_notch
+    fs: int = CFG.data.fs,
+    apply_baseline_removal: bool = CFG.preprocessing.apply_baseline_removal,
+    baseline_method: str = CFG.preprocessing.baseline_removal_method,
+    apply_bandpass: bool = CFG.preprocessing.apply_bandpass,
+    apply_notch: bool = CFG.preprocessing.apply_notch
 ) -> np.ndarray:
     """
     Apply leakage-safe preprocessing to a raw ECG signal.
@@ -37,8 +37,8 @@ def preprocess_signal(
         # ⚠️  WARNING: bandpass must NOT cut ST-relevant low frequencies
         # Only use if baseline_removal alone is insufficient
         out = _bandpass_filter(out, fs,
-                               low=CFG.bandpass_low_hz,
-                               high=CFG.bandpass_high_hz)
+                               low=CFG.preprocessing.bandpass_low_hz,
+                               high=CFG.preprocessing.bandpass_high_hz)
 
     if apply_notch:
         out = _notch_filter(out, fs)
@@ -59,7 +59,7 @@ def _remove_baseline(
     Use 600ms kernel → 61 samples (must be odd)
     """
     if method == 'median_filter':
-        kernel_samples = int(CFG.median_filter_kernel_ms * fs / 1000)
+        kernel_samples = int(CFG.preprocessing.median_filter_kernel_ms * fs / 1000)
         if kernel_samples % 2 == 0:
             kernel_samples += 1           # Must be odd for medfilt
 

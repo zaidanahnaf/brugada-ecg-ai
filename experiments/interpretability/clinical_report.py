@@ -222,7 +222,7 @@ def generate_clinical_interpretation_report(
     lead_importance: pd.DataFrame,
     consensus_importance: pd.DataFrame,
     top_k: int = 15,
-    save_path: str = "results/interpretability/clinical_report.txt"
+    save_path: str = "outputs/results/interpretability/clinical_report.txt"
 ) -> str:
     """
     Generate the clinical ML interpretation report.

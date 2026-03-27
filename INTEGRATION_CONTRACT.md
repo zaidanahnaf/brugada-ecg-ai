@@ -18,41 +18,41 @@ RULE: This file MUST NOT be regenerated after initial creation.
 
 ## SECTION 2: PERSON 3 DELIVERABLES TO PERSON 2
 
-FILE 1: features/feature_matrix.csv
+FILE 1: outputs/features/feature_matrix.csv
     Rows    : One per subject (363 total)
     Columns : patient_id, brugada, pipeline_status, n_valid_beats,
               [all handcrafted feature columns]
     Note    : Exclude pipeline_status == 'FAILED' rows before ML
 
-FILE 2: features/feature_manifest.json
+FILE 2: outputs/features/feature_manifest.json
     Purpose : Complete feature registry with definitions and statistics
 
-FILE 3: features/scaled/fold_{k}/
+FILE 3: outputs/features/scaled/fold_{k}/
     Contents: train_X.npy, train_y.npy, train_ids.csv,
               val_X.npy, val_y.npy, val_ids.csv,
               imputer.pkl, scaler.pkl, feature_names.json
     Critical: DO NOT re-scale — use as-is
 
-FILE 4: features/oof_predictions_handcrafted.csv
+FILE 4: outputs/features/oof_predictions_handcrafted.csv
     Columns : patient_id, brugada, oof_prob_brugada, fold_id, model_name
     Critical: OOF only — no training predictions
 
-FILE 5: features/reduced/top_k_{10,20,35}_feature_matrix.csv
+FILE 5: outputs/features/reduced/top_k_{10,20,35}_feature_matrix.csv
     Note    : Use top_k_20 as default for early fusion
 
 ---
 
 ## SECTION 3: PERSON 2 DELIVERABLES TO PERSON 3
 
-FILE 1: features/cnn_embeddings.csv
+FILE 1: outputs/features/cnn_embeddings.csv
     Columns : patient_id, cnn_embed_0, ..., cnn_embed_{D-1}
     Critical: All 363 subjects — NaN for failures, do not drop rows
 
-FILE 2: features/cnn_fold_probs.csv
+FILE 2: outputs/features/cnn_fold_probs.csv
     Columns : patient_id, brugada, oof_prob_brugada, fold_id
     Critical: Must use same fold_assignments.csv
 
-FILE 3: results/cnn_cv_summary.json
+FILE 3: outputs/results/cnn_cv_summary.json
     Contents: auroc_mean, auroc_std, auprc_mean, sensitivity_mean, etc.
 
 ---

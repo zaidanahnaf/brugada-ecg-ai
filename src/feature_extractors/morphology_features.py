@@ -2,7 +2,7 @@
 
 import numpy as np
 from typing import Dict
-from src.config import CFG
+from src.config.__init__ import CFG
 
 
 def extract_morphology_features_single_beat(
@@ -11,7 +11,7 @@ def extract_morphology_features_single_beat(
     fiducials: Dict,
     st_features: Dict,
     lead_name: str,
-    fs: int = CFG.fs
+    fs: int = CFG.data.fs
 ) -> Dict[str, float]:
     """
     Extract Brugada-specific morphology features for one beat on one lead.
@@ -47,7 +47,7 @@ def extract_morphology_features_single_beat(
         features[f"{pfx}_t_amplitude"] = float(np.max(np.abs(t_seg)))
         features[f"{pfx}_t_mean"] = t_mean
         features[f"{pfx}_t_inversion_indicator"] = int(
-            t_mean < CFG.t_inversion_threshold_mv
+            t_mean < CFG.feature.t_inversion_threshold_mv
         )
         features[f"{pfx}_t_peak_value"] = t_peak_val
     else:
@@ -109,10 +109,10 @@ def extract_morphology_features_single_beat(
 
     # ── High-Takeoff Binary Indicators ────────────────────────────
     features[f"{pfx}_high_takeoff_gt_2mm"] = int(
-        not np.isnan(j_amp) and j_amp >= CFG.high_takeoff_2mm_mv
+        not np.isnan(j_amp) and j_amp >= CFG.feature.high_takeoff_2mm_mv
     )
     features[f"{pfx}_high_takeoff_gt_1mm"] = int(
-        not np.isnan(j_amp) and j_amp >= CFG.high_takeoff_1mm_mv
+        not np.isnan(j_amp) and j_amp >= CFG.feature.high_takeoff_1mm_mv
     )
 
     return features

@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv("features/feature_matrix.csv")
+df = pd.read_csv("outputs/features/feature_matrix.csv")
 
 print("=" * 60)
 print("FEATURE MATRIX SANITY CHECK")

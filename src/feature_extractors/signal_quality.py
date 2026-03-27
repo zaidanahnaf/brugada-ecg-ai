@@ -3,14 +3,14 @@
 import numpy as np
 from scipy.signal import welch
 from typing import Dict
-from src.config import CFG
+from src.config.__init__ import CFG
 
 
 def extract_signal_quality_features(
     signal: np.ndarray,        # full record (n_samples, n_leads)
     lead_names: list,
     rr_ms: np.ndarray,
-    fs: int = CFG.fs
+    fs: int = CFG.data.fs
 ) -> Dict[str, float]:
     """
     Extract basic signal quality and global statistics.
@@ -31,7 +31,7 @@ def extract_signal_quality_features(
 
         # Noise estimate: energy in high-frequency band
         freqs, psd = welch(sig, fs=fs, nperseg=min(256, len(sig)))
-        noise_mask = (freqs >= CFG.noise_band_low_hz) & (freqs <= CFG.noise_band_high_hz)
+        noise_mask = (freqs >= CFG.feature.noise_band_low_hz) & (freqs <= CFG.feature.noise_band_high_hz)
         signal_mask = (freqs >= 1.0) & (freqs <= 30.0)
 
         noise_energy = float(np.trapezoid(psd[noise_mask], freqs[noise_mask])) \
@@ -43,7 +43,7 @@ def extract_signal_quality_features(
         features[f"{prefix}_snr_proxy"] = signal_energy / max(noise_energy, 1e-9)
 
         # Baseline drift: energy below 0.5 Hz
-        drift_mask = freqs <= CFG.baseline_drift_band_hz
+        drift_mask = freqs <= CFG.feature.baseline_drift_band_hz
         features[f"{prefix}_baseline_drift"] = float(
             np.trapezoid(psd[drift_mask], freqs[drift_mask])
         ) if drift_mask.sum() > 1 else 0.0
