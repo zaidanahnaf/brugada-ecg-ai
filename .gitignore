@@ -33,7 +33,7 @@ Thumbs.db
 .idea/
 
 # Logs
-*.logs/
+.logs/
 
 # Misc
 experiments/ablation/
