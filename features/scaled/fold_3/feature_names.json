@@ -680,10 +680,9 @@
     "cl_n_leads_coved_v1v3",
     "cl_n_leads_saddleback_v1v3",
     "cl_n_leads_t_inverted_v1v3",
-    "cl_max_covedness_v1v3",
-    "median_rr_ms"
+    "cl_max_covedness_v1v3"
   ],
-  "n_features": 682,
+  "n_features": 681,
   "val_fold": 3,
   "n_train": 291,
   "n_val": 72,

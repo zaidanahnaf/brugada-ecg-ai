@@ -109,11 +109,25 @@ def main():
     # -------------------------------------------------------------------------
     df_folds = pd.read_csv(FOLD_CSV, dtype={'patient_id': str})
 
+    df_catboost = pd.read_csv(
+        'features/oof_predictions_catboost_best.csv',  # best params version
+        dtype={'patient_id': str}
+    )[['patient_id', 'oof_prob_brugada']].rename(
+        columns={'oof_prob_brugada': 'prob_catboost'}
+    )
+
     df_logreg = pd.read_csv(
-        'features/oof_predictions_handcrafted.csv',
+        'features/oof_predictions_logreg.csv',
         dtype={'patient_id': str}
     )[['patient_id', 'oof_prob_brugada']].rename(
         columns={'oof_prob_brugada': 'prob_logreg'}
+    )
+
+    df_rf = pd.read_csv(
+        'features/oof_predictions_rf.csv',
+        dtype={'patient_id': str}
+    )[['patient_id', 'oof_prob_brugada']].rename(
+        columns={'oof_prob_brugada': 'prob_rf'}
     )
 
     df_cnn = pd.read_csv(
@@ -140,7 +154,9 @@ def main():
     # 3. Merge semua ke fold assignments sebagai base
     # -------------------------------------------------------------------------
     df_meta = df_folds[['patient_id', 'brugada', 'fold_id']].copy()
+    df_meta = df_meta.merge(df_catboost, on='patient_id', how='left')
     df_meta = df_meta.merge(df_logreg, on='patient_id', how='left')
+    df_meta = df_meta.merge(df_rf,     on='patient_id', how='left')
     df_meta = df_meta.merge(df_cnn,    on='patient_id', how='left')
     df_meta = df_meta.merge(
         df_raw[['patient_id'] + top_20_features],
@@ -160,18 +176,26 @@ def main():
     df_meta = df_meta[~failed_mask].reset_index(drop=True)
 
     # Sanity check NaN
-    nan_logreg = df_meta['prob_logreg'].isna().sum()
+    nan_catboost = df_meta['prob_catboost'].isna().sum()
+    nan_logreg   = df_meta['prob_logreg'].isna().sum()
+    nan_rf       = df_meta['prob_rf'].isna().sum()
     nan_cnn    = df_meta['prob_cnn'].isna().sum()
     nan_st     = df_meta[top_20_features].isna().sum().sum()
 
-    if nan_logreg > 0 or nan_cnn > 0:
+    for name, n in [('catboost', nan_catboost), ('logreg', nan_logreg), ('rf', nan_rf), ('cnn', nan_cnn)]:
+        if n > 2:
+            raise ValueError(f"NaN di prob_{name}: {n} (expected max 2 untuk failed subjects)")
+
+    if nan_catboost > 0 or nan_logreg > 0 or nan_rf > 0 or nan_cnn > 0:
         bad_ids = df_meta.loc[
-            df_meta['prob_logreg'].isna() | df_meta['prob_cnn'].isna(),
+            df_meta['prob_catboost'].isna() | df_meta['prob_logreg'].isna() | df_meta['prob_rf'].isna() | df_meta['prob_cnn'].isna(),
             'patient_id'
         ].tolist()
         raise ValueError(
             f"NaN di OOF probabilities!\n"
+            f"  prob_catboost NaN: {nan_catboost}\n"
             f"  prob_logreg NaN: {nan_logreg}\n"
+            f"  prob_rf NaN      : {nan_rf}\n"
             f"  prob_cnn NaN   : {nan_cnn}\n"
             f"  Patient IDs    : {bad_ids}"
         )
@@ -193,7 +217,7 @@ def main():
     # -------------------------------------------------------------------------
     # 5. Setup arrays
     # -------------------------------------------------------------------------
-    PROB_FEATURES = ['prob_logreg', 'prob_cnn']
+    PROB_FEATURES = ['prob_catboost', 'prob_logreg', 'prob_rf', 'prob_cnn']
     META_FEATURES = PROB_FEATURES + top_20_features   # 22 fitur total
 
     y     = df_meta['brugada'].values.astype(int)
@@ -268,8 +292,29 @@ def main():
     # -------------------------------------------------------------------------
     # 7. Late fusion baseline (weighted average) — untuk comparison
     # -------------------------------------------------------------------------
-    prob_cnn_all    = df_meta['prob_cnn'].values
+    prob_catboost_all = df_meta['prob_catboost'].values
     prob_logreg_all = df_meta['prob_logreg'].values
+    prob_rf_all     = df_meta['prob_rf'].values
+    prob_cnn_all    = df_meta['prob_cnn'].values
+
+    prob_cb  = df_meta['prob_catboost'].values
+    prob_lr  = df_meta['prob_logreg'].values
+    prob_rf  = df_meta['prob_rf'].values
+    prob_cnn = pd.read_csv('features/cnn_fold_probs.csv',
+                            dtype={'patient_id': str}
+            ).merge(df_meta[['patient_id']], on='patient_id'
+            )['oof_prob_brugada'].values
+
+    print("\n  CNN vs Best Handcrafted (LogReg):")
+    best_lf, best_w = 0, 0
+    for w in np.arange(0, 1.05, 0.05):
+        fused = w * prob_cnn + (1-w) * prob_lr
+        auc   = roc_auc_score(y, fused)
+        if auc > best_lf:
+            best_lf, best_w = auc, w
+        marker = " ← best" if auc == best_lf else ""
+        if auc > 0.950:
+            print(f"  w_cnn={w:.2f} w_logreg={1-w:.2f} | AUROC={auc:.4f}{marker}")
 
     print(f"\n{'='*60}")
     print(f"  LATE FUSION COMPARISON (weighted average grid search)")

@@ -211,6 +211,7 @@ def run_cv_for_model(
     fold_df_out.to_csv(
         f"{results_dir}/{model_name}_fold_metrics.csv", index=False
     )
+    
     with open(f"{results_dir}/{model_name}_cv_summary.json", 'w') as f:
         # Filter non-serializable entries before saving
         serializable = {

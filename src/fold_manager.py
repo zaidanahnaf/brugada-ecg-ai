@@ -76,11 +76,15 @@ def get_fold_split(
     train_ids = fold_df[fold_df['fold_id'] != val_fold]['patient_id'].values
     val_ids = fold_df[fold_df['fold_id'] == val_fold]['patient_id'].values
 
+    META_COLS = [
+    'patient_id', CFG.target_col, 'fold_id',
+    'pipeline_status', 'n_valid_beats', 'median_rr_ms'   # ← tambah ini
+    ]
+
     feature_cols = [
         c for c in feature_df.columns
-        if c not in ['patient_id', CFG.target_col, 'fold_id',
-                     'pipeline_status', 'n_valid_beats']
-        and not c.startswith(CFG.qc_feature_prefix)   # Exclude qc_ columns
+        if c not in META_COLS
+        and not c.startswith(CFG.qc_feature_prefix)
     ]
     # qc_ columns remain in feature_df for error analysis access
     # but are never passed to ML models as input features

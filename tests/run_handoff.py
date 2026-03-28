@@ -1,6 +1,7 @@
 # run_handoff.py
 
 import logging
+from catboost import CatBoostClassifier
 import pandas as pd
 from pathlib import Path
 
@@ -29,6 +30,8 @@ feature_df  = pd.read_csv("features/feature_matrix.csv")
 fold_df     = load_folds("data/splits/fold_assignments.csv")
 metadata    = load_metadata(CFG.metadata_path)
 
+
+random_seed = 42
 feature_cols = [
     c for c in feature_df.columns
     if c not in ['patient_id', CFG.target_col,
@@ -36,10 +39,16 @@ feature_cols = [
 ]
 
 def best_model_factory():
-    return LogisticRegression(
-        C=0.1, penalty='l1', solver='saga',
-        class_weight='balanced',
-        max_iter=2000, random_state=CFG.random_seed
+    return CatBoostClassifier(
+        learning_rate=0.1,
+        l2_leaf_reg=3,
+        iterations=100,
+        depth=3,
+        border_count=32,
+        auto_class_weights='Balanced',
+        eval_metric='AUC',
+        random_state=CFG.random_seed,
+        verbose=0
     )
 
 # ── Step 1: Generate Feature Manifest ────────────────────────────
@@ -79,7 +88,7 @@ save_oof_predictions(
     feature_df=feature_df,
     model_factory=best_model_factory,
     feature_cols=feature_cols,
-    model_name="LogReg_L1_balanced",
+    model_name="CatBoostClassifier_depth3_border32",
     save_path="features/oof_predictions_handcrafted.csv"
 )
 

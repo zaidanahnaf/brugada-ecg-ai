@@ -1,8 +1,6 @@
 # src/pipeline.py
 
 import numpy as np
-from packaging import metadata
-from packaging import metadata
 import pandas as pd
 import json
 import logging
