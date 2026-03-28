@@ -16,7 +16,6 @@
     "st_V1_st_curvature_sign_min",
     "st_V3_st_j40_j0_ratio_mean",
     "st_V1_st_j80_j0_ratio_max",
-    "morph_V2_trough_depth_between_humps_min",
     "morph_V3_t_amplitude_mean",
     "st_V2_st_convexity_mean",
     "morph_V2_t_peak_value_max",
@@ -26,7 +25,7 @@
     "st_V1_st_j80_median",
     "morph_V1_high_takeoff_gt_2mm_max"
   ],
-  "n_meta_features": 24,
+  "n_meta_features": 23,
   "stacking": {
     "oof_combined": {
       "auroc": 0.8955174686882004,
@@ -207,7 +206,9 @@
         "w_cnn": 1.0,
         "auroc": 0.9293247951784537
       }
-    ]
+    ],
+    "prob_late_fusion_saved": true,
+    "formula": "0.65 * prob_cnn + 0.35 * prob_logreg"
   },
   "individual_models": {
     "ecgresnet_oof_auroc": 0.9293247951784537,

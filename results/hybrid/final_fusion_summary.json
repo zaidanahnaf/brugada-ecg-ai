@@ -1,0 +1,29 @@
+{
+  "best_method": "Late Fusion CNN+LR (A)",
+  "best_auroc": 0.9553159431208211,
+  "all_results": {
+    "CatBoost (HC, CV)": 0.922,
+    "CNN standalone (OOF)": 0.9293247951784537,
+    "Late Fusion CNN+LR (A)": 0.9553159431208211,
+    "Late Fusion CNN+CB (A)": 0.938741877766268,
+    "Late Fusion 3-model (A)": 0.9553159431208211,
+    "Late Fusion CNN+LR (B)": 0.9493831810904981,
+    "Late Fusion CNN+CB (B)": 0.9302665034372352,
+    "Stacking 4-model": 0.9489594123740466
+  },
+  "late_fusion_primary": {
+    "method": "CNN + LogReg weighted average",
+    "method_a_weight_cnn": 0.65,
+    "method_a_auroc": 0.9553159431208211,
+    "method_b_oof_auroc": 0.9493831810904981,
+    "method_b_mean": 0.9601177512747385,
+    "method_b_std": 0.016318492782347243,
+    "formula": "p_final = 0.65*p_CNN + 0.35*p_LogReg",
+    "note": "Method A weight tuned on full OOF (slightly optimistic). Method B nested CV is rigorous estimate for paper."
+  },
+  "stacking": {
+    "oof_auroc": 0.9489594123740466,
+    "fold_mean": 0.9557792469679948,
+    "fold_std": 0.018696224513070365
+  }
+}

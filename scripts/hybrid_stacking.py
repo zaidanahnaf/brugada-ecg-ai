@@ -213,12 +213,23 @@ def main():
           f"{int((df_meta['brugada']==0).sum())} Normal)")
     print(f"[INFO] Meta features : 2 OOF probs + {len(top_20_features)} ST features "
           f"= {2 + len(top_20_features)} total")
+    
+    nan_ratio = df_meta[top_20_features].isna().mean()
+    high_nan_features = nan_ratio[nan_ratio > 0.90].index.tolist()
+
+    if high_nan_features:
+        print(f"[INFO] Dropping {len(high_nan_features)} ST features >90% NaN:")
+        for f in high_nan_features:
+            print(f"       {f}  ({nan_ratio[f]*100:.1f}% NaN)")
+        top_20_clean = [f for f in top_20_features if f not in high_nan_features]
+    else:
+        top_20_clean = top_20_features
 
     # -------------------------------------------------------------------------
     # 5. Setup arrays
     # -------------------------------------------------------------------------
     PROB_FEATURES = ['prob_catboost', 'prob_logreg', 'prob_rf', 'prob_cnn']
-    META_FEATURES = PROB_FEATURES + top_20_features   # 22 fitur total
+    META_FEATURES = PROB_FEATURES + top_20_clean   # 22 fitur total
 
     y     = df_meta['brugada'].values.astype(int)
     folds = df_meta['fold_id'].values.astype(int)
@@ -392,8 +403,10 @@ def main():
     # Output CSV
     df_out = df_meta[['patient_id', 'brugada', 'fold_id',
                        'prob_logreg', 'prob_cnn']].copy()
-    df_out['prob_late_fusion'] = (best_w_cnn * prob_cnn_all +
-                                  (1 - best_w_cnn) * prob_logreg_all)
+    df_out['prob_late_fusion'] = (
+        best_w_cnn * df_meta['prob_cnn'].values +
+        (1 - best_w_cnn) * df_meta['prob_logreg'].values
+    )
     df_out['prob_stacking']    = oof_stacking
     df_out.to_csv('results/hybrid_stacking_oof.csv', index=False)
 
@@ -416,6 +429,8 @@ def main():
             'best_w_logreg': float(1 - best_w_cnn),
             'all_weights':  [{'w_cnn': float(w), 'auroc': float(a)}
                              for w, a in sorted(lf_results)],
+            'prob_late_fusion_saved': True,
+            'formula': f"0.65 * prob_cnn + 0.35 * prob_logreg"
         },
         'individual_models': {
             'ecgresnet_oof_auroc':  float(auroc_cnn),
