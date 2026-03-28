@@ -1,6 +1,7 @@
 # run_pipeline.py
 
 import logging
+from pathlib import Path
 import pandas as pd
 from src.config.__init__ import CFG
 from src.data.data_loader import load_metadata
