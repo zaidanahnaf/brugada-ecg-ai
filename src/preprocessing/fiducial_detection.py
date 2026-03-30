@@ -1,202 +1,193 @@
-# src/beat_segmentation.py
+# src/fiducial_detection.py
 
 import numpy as np
-import pandas as pd
-from typing import List, Dict, Optional, Tuple
-import logging
+from typing import Dict, Optional, Tuple
 from src.config import CFG
 
-logger = logging.getLogger(__name__)
 
-
-def detect_rpeaks(
-    signal: np.ndarray,
+def detect_fiducials(
+    beat: np.ndarray,          # shape: (window_samples, n_leads)
+    lead_idx: int,             # which lead column to analyze
     fs: int = CFG.fs,
-    lead_names: list = None,
-    method: str = CFG.rpeak_method
+    median_rr_ms: float = 800.0
 ) -> Dict:
     """
-    Detect R-peaks using the specified method.
-    Detection is performed on Lead II preferentially, then V1 as fallback.
+    Detect fiducial points for a single beat on a single lead.
 
-    Returns
-    -------
-    dict:
-        rpeaks     : np.ndarray of sample indices
-        rr_ms      : np.ndarray of RR intervals in ms
-        method_used: str
-        failed     : bool
-        failure_reason: str or None
+    Fiducials:
+        r_peak_sample   : int (by construction = pre_samples index)
+        s_nadir_sample  : int
+        j_point_sample  : int (QRS end proxy)
+        st_samples      : dict {offset_ms: sample_index}
+        t_start_sample  : int
+        t_end_sample    : int
+        baseline_samples: slice
+        confidence      : dict of per-fiducial confidence flags
+
+    All samples are relative to beat array start (index 0).
     """
-    result = {
-        'rpeaks': np.array([]),
-        'rr_ms': np.array([]),
-        'method_used': method,
-        'failed': False,
-        'failure_reason': None
-    }
-
-    # Select detection lead
-    detection_lead_idx = _select_detection_lead(signal, lead_names)
-    detection_signal = signal[:, detection_lead_idx]
-
-    try:
-        if method == 'neurokit':
-            rpeaks = _detect_neurokit(detection_signal, fs)
-        elif method == 'pantompkins':
-            rpeaks = _detect_pantompkins(detection_signal, fs)
-        elif method == 'wfdb':
-            rpeaks = _detect_wfdb(detection_signal, fs)
-        else:
-            raise ValueError(f"Unknown R-peak method: {method}")
-
-    except Exception as e:
-        # Cascade fallback: try pantompkins if neurokit fails
-        logger.warning(f"Primary R-peak detection failed ({e}), trying fallback")
-        try:
-            rpeaks = _detect_pantompkins(detection_signal, fs)
-            result['method_used'] = 'pantompkins_fallback'
-        except Exception as e2:
-            result['failed'] = True
-            result['failure_reason'] = f"ALL_RPEAK_METHODS_FAILED: {e2}"
-            return result
-
-    if len(rpeaks) < CFG.min_valid_beats:
-        result['failed'] = True
-        result['failure_reason'] = f"TOO_FEW_RPEAKS: {len(rpeaks)}"
-        return result
-
-    rr_ms = np.diff(rpeaks) * 1000 / fs
-    result['rpeaks'] = rpeaks
-    result['rr_ms'] = rr_ms
-    return result
-
-
-def _select_detection_lead(signal: np.ndarray, lead_names: list) -> int:
-    """Prefer Lead II for R-peak detection; fallback to index 1, then max energy."""
-    if lead_names:
-        for preferred in ['II', 'I', 'V2']:
-            if preferred in lead_names:
-                return lead_names.index(preferred)
-    # Fallback: lead with highest RMS
-    return int(np.argmax(np.sqrt(np.mean(signal**2, axis=0))))
-
-
-def _detect_neurokit(signal_1d: np.ndarray, fs: int) -> np.ndarray:
-    import neurokit2 as nk
-    _, info = nk.ecg_peaks(signal_1d, sampling_rate=fs, method='neurokit')
-    return np.array(info['ECG_R_Peaks'])
-
-
-def _detect_pantompkins(signal_1d: np.ndarray, fs: int) -> np.ndarray:
-    import neurokit2 as nk
-    _, info = nk.ecg_peaks(signal_1d, sampling_rate=fs, method='pantompkins1985')
-    return np.array(info['ECG_R_Peaks'])
-
-
-def _detect_wfdb(signal_1d: np.ndarray, fs: int) -> np.ndarray:
-    import wfdb.processing as wp
-    rpeaks = wp.qrs_detect(signal_1d, fs=fs)
-    return np.array(rpeaks)
-
-
-def filter_beats(
-    rpeaks: np.ndarray,
-    rr_ms: np.ndarray,
-    signal_length: int,
-    fs: int = CFG.fs
-) -> Dict:
-    """
-    Filter beats by:
-    1. Physiological RR range (40–150 BPM)
-    2. RR stability: within ±15% of median RR (reject ectopics/artifacts)
-    3. Sufficient signal before and after R-peak for window extraction
-
-    Returns
-    -------
-    dict:
-        valid_rpeaks     : np.ndarray
-        rejected_indices : np.ndarray
-        rejection_reasons: list of str
-        n_valid          : int
-        median_rr_ms     : float
-        failed           : bool
-        failure_reason   : str or None
-    """
-    if len(rpeaks) < 2:
-        return {
-            'valid_rpeaks': np.array([]),
-            'n_valid': 0,
-            'failed': True,
-            'failure_reason': 'INSUFFICIENT_RPEAKS_FOR_FILTERING'
-        }
-
-    # Append a synthetic last RR (use median) so every beat has an associated RR
-    rr_all = np.append(rr_ms, np.median(rr_ms))
-
-    median_rr = np.median(rr_ms)
-
     pre_samples = int(CFG.beat_window_pre_ms * fs / 1000)
-    post_samples = int(CFG.beat_window_post_ms * fs / 1000)
+    r_sample = pre_samples  # By construction
 
-    valid_mask = np.ones(len(rpeaks), dtype=bool)
-    rejection_reasons = [''] * len(rpeaks)
+    sig = beat[:, lead_idx]
+    n = len(sig)
 
-    for i, (rpeak, rr) in enumerate(zip(rpeaks, rr_all)):
-        reasons = []
+    confidence = {}
 
-        # RR physiological range
-        if not (CFG.min_rr_ms <= rr <= CFG.max_rr_ms):
-            reasons.append(f"RR_OUT_OF_RANGE:{rr:.0f}ms")
+    # ── Baseline Reference ─────────────────────────────────────────
+    # PR segment: window before QRS
+    bl_start = max(0, r_sample + int(CFG.baseline_ref_start_ms * fs / 1000))
+    bl_end = max(0, r_sample + int(CFG.baseline_ref_end_ms * fs / 1000))
 
-        # RR stability (ectopic detection)
-        if abs(rr - median_rr) / median_rr > CFG.rr_stability_threshold:
-            reasons.append(f"RR_UNSTABLE:{rr:.0f}ms_vs_median_{median_rr:.0f}ms")
+    if bl_end > bl_start + 2:
+        baseline_mv = float(np.median(sig[bl_start:bl_end]))
+        confidence['baseline'] = 'PR_SEGMENT'
+    else:
+        baseline_mv = float(np.median(sig[:max(1, r_sample - 5)]))
+        confidence['baseline'] = 'FALLBACK_PRE_QRS'
 
-        # Boundary check
-        if rpeak - pre_samples < 0:
-            reasons.append("BEAT_TOO_CLOSE_TO_START")
-        if rpeak + post_samples >= signal_length:
-            reasons.append("BEAT_TOO_CLOSE_TO_END")
+    # ── S-Nadir Detection ──────────────────────────────────────────
+    # Search window: R+10ms to R+100ms
+    s_search_start = r_sample + int(10 * fs / 1000)
+    s_search_end = min(n, r_sample + int(100 * fs / 1000))
 
-        if reasons:
-            valid_mask[i] = False
-            rejection_reasons[i] = '|'.join(reasons)
+    if s_search_end > s_search_start:
+        s_nadir_rel = int(np.argmin(sig[s_search_start:s_search_end]))
+        s_nadir_sample = s_search_start + s_nadir_rel
+        confidence['s_nadir'] = 'DETECTED'
+    else:
+        # Fallback: assume S-nadir at R+40ms
+        s_nadir_sample = r_sample + int(40 * fs / 1000)
+        confidence['s_nadir'] = 'FALLBACK_R+40MS'
 
-    valid_rpeaks = rpeaks[valid_mask]
-    n_valid = int(valid_mask.sum())
+    # ── J-Point Detection (QRS End Proxy) ─────────────────────────
+    # Strategy: minimum |dV/dt| after S-nadir
+    j_search_start = s_nadir_sample + int(CFG.qrs_end_search_start_ms * fs / 1000)
+    j_search_end = min(n, s_nadir_sample + int(CFG.qrs_end_search_end_ms * fs / 1000))
 
-    failed = n_valid < CFG.min_valid_beats
-    failure_reason = f"TOO_FEW_VALID_BEATS:{n_valid}" if failed else None
+    j_sample, j_confidence = _detect_j_point(
+        sig, s_nadir_sample, j_search_start, j_search_end, fs
+    )
+    confidence['j_point'] = j_confidence
+
+    # ── ST Sample Indices ──────────────────────────────────────────
+    st_samples = {}
+    for offset_ms in CFG.st_offsets_ms:
+        st_idx = j_sample + int(offset_ms * fs / 1000)
+        if st_idx < n:
+            st_samples[offset_ms] = st_idx
+        else:
+            st_samples[offset_ms] = None   # Out of bounds
+
+    # ST window end
+    st_window_end = min(n, j_sample + int(CFG.st_window_end_ms * fs / 1000))
+
+    # ── T-Wave Window ──────────────────────────────────────────────
+    t_start, t_end = _estimate_t_wave_window(
+        r_sample, n, fs, median_rr_ms
+    )
+    confidence['t_wave'] = 'HR_ADJUSTED' if median_rr_ms > 0 else 'FALLBACK_FIXED'
 
     return {
-        'valid_rpeaks': valid_rpeaks,
-        'rejected_indices': np.where(~valid_mask)[0],
-        'rejection_reasons': rejection_reasons,
-        'n_valid': n_valid,
-        'median_rr_ms': float(median_rr),
-        'failed': failed,
-        'failure_reason': failure_reason
+        'r_sample': r_sample,
+        's_nadir_sample': s_nadir_sample,
+        'j_point_sample': j_sample,
+        'baseline_mv': baseline_mv,
+        'st_samples': st_samples,
+        'st_window_start': j_sample,
+        'st_window_end': st_window_end,
+        't_start_sample': t_start,
+        't_end_sample': t_end,
+        'confidence': confidence
     }
 
 
-def extract_beat_windows(
-    signal: np.ndarray,
-    valid_rpeaks: np.ndarray,
-    fs: int = CFG.fs
-) -> np.ndarray:
+def _detect_j_point(
+    sig: np.ndarray,
+    s_nadir: int,
+    search_start: int,
+    search_end: int,
+    fs: int
+) -> Tuple[int, str]:
     """
-    Extract fixed-width beat windows around each valid R-peak.
+    Find J-point as the sample of minimum absolute first derivative
+    in the post-S-nadir search window.
 
-    Returns
-    -------
-    beats : np.ndarray, shape (n_beats, window_samples, n_leads)
+    Fallback: use S_nadir + 40ms if search window is too narrow.
     """
-    pre = int(CFG.beat_window_pre_ms * fs / 1000)
-    post = int(CFG.beat_window_post_ms * fs / 1000)
-    window_size = pre + post
+    if search_end <= search_start + 2:
+        fallback = s_nadir + int(40 * fs / 1000)
+        return min(fallback, len(sig) - 1), 'FALLBACK_NARROW_WINDOW'
 
-    beats = np.zeros((len(valid_rpeaks), window_size, signal.shape[1]))
-    for i, rpeak in enumerate(valid_rpeaks):
-        beats[i] = signal[rpeak - pre: rpeak + post, :]
-    return beats
+    window = sig[search_start:search_end]
+    deriv = np.abs(np.diff(window))
+
+    if len(deriv) == 0:
+        fallback = s_nadir + int(40 * fs / 1000)
+        return min(fallback, len(sig) - 1), 'FALLBACK_EMPTY_DERIV'
+
+    j_rel = int(np.argmin(deriv))
+    j_sample = search_start + j_rel
+
+    # Confidence check: is the derivative actually small here?
+    # If not, we are probably not at a true plateau
+    min_deriv_val = float(deriv[j_rel])
+    max_in_qrs = float(np.max(np.abs(np.diff(sig[max(0, s_nadir-20):s_nadir+5]))))
+
+    if max_in_qrs > 0 and (min_deriv_val / max_in_qrs) > 0.3:
+        # Derivative still elevated — J-point uncertain
+        confidence = 'LOW_CONFIDENCE_HIGH_DERIV'
+    else:
+        confidence = 'OK'
+
+    return j_sample, confidence
+
+
+def _estimate_t_wave_window(
+    r_sample: int,
+    signal_length: int,
+    fs: int,
+    median_rr_ms: float
+) -> Tuple[int, int]:
+    """
+    Estimate T-wave window relative to R-peak.
+
+    FIXED: HR-adjusted window capped strictly to beat array bounds.
+    Falls back to fixed offsets when HR-adjusted window would overflow.
+
+    With beat_window_post_ms=500ms:
+        post_samples = 50 (at 100Hz)
+        Max usable T-window end = r_sample + 49 = sample 69
+
+    Fixed fallback (180-420ms after R):
+        t_start = 20 + 18 = 38
+        t_end   = 20 + 42 = 62
+        Always fits in 70-sample beat array.
+    """
+    MIN_T_WINDOW_SAMPLES = 10  # Minimum usable T-wave window
+
+    # ── Try HR-adjusted window ────────────────────────────────────
+    if median_rr_ms > 400:
+        rr_samples = int(median_rr_ms * fs / 1000)
+        t_start_hr = r_sample + int(CFG.t_wave_start_fraction * rr_samples)
+        t_end_hr   = r_sample + int(CFG.t_wave_end_fraction   * rr_samples)
+
+        # Cap to array bounds
+        t_start_hr = min(t_start_hr, signal_length - MIN_T_WINDOW_SAMPLES - 1)
+        t_end_hr   = min(t_end_hr,   signal_length)
+
+        if (t_start_hr >= 0 and
+                t_end_hr > t_start_hr and
+                (t_end_hr - t_start_hr) >= MIN_T_WINDOW_SAMPLES):
+            return int(t_start_hr), int(t_end_hr)
+
+    # ── Fallback: fixed offsets ───────────────────────────────────
+    # These are designed to fit within beat_window_post_ms=500ms
+    t_start = r_sample + int(CFG.t_wave_fallback_start_ms * fs / 1000)
+    t_end   = r_sample + int(CFG.t_wave_fallback_end_ms   * fs / 1000)
+
+    # Final safety cap
+    t_start = max(0, min(t_start, signal_length - MIN_T_WINDOW_SAMPLES - 1))
+    t_end   = max(t_start + MIN_T_WINDOW_SAMPLES, min(t_end, signal_length))
+
+    return int(t_start), int(t_end)
